@@ -1,7 +1,7 @@
 # Личный проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Вячеслав Сливка](https://up.htmlacademy.ru/ecmascript/10/user/139086).
-* Наставник: `Неизвестно`.
+* Наставник: [Александр Погорелов](https://htmlacademy.ru/profile/id1031283).
 
 ---
 

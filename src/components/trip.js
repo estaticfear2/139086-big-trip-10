@@ -1,4 +1,4 @@
-import {formatTime} from '../utils.js';
+import {createElement, formatTime} from '../utils.js';
 import {eventTypeMap} from '../const.js';
 
 const createOffersMarkup = (offers) => {
@@ -53,10 +53,33 @@ const createTripMarkup = (event) => {
   );
 };
 
-export const createTripTemplate = (event) => {
+const createTripTemplate = (event) => {
   return (
     `<li class="trip-events__item">
         ${createTripMarkup(event)}
       </li>`
   );
 };
+
+export default class TripTemplate {
+  constructor(event) {
+    this._event = event;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

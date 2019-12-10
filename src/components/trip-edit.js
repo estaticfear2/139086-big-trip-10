@@ -1,4 +1,4 @@
-import {formatDate, formatTime} from '../utils.js';
+import {createElement, formatDate, formatTime} from '../utils.js';
 import {eventTypeMap} from '../const.js';
 
 const createEventPhotoMarkup = (list) => {
@@ -7,7 +7,7 @@ const createEventPhotoMarkup = (list) => {
 
 const createTripEditMarkup = (event) => {
   return (
-    `<form class="trip-events__item  event  event--edit" action="#" method="post">
+    `<form class="event  event--edit" action="#" method="post">
         <header class="event__header">
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -193,6 +193,29 @@ const createTripEditMarkup = (event) => {
   );
 };
 
-export const createTripEditTemplate = (eventsList) => {
-  return createTripEditMarkup(eventsList[0]);
+const createTripEditTemplate = (event) => {
+  return createTripEditMarkup(event);
 };
+
+export default class TripEdit {
+  constructor(event) {
+    this._event = event;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripEditTemplate(this._event);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

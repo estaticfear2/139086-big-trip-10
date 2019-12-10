@@ -20,4 +20,35 @@ const formatTime = (date) => {
   return `${date.getHours()}:${date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes()}`;
 };
 
-export {getRandomArrayItem, getRandomNumber, getRandomIntegerNumber, formatDate, formatTime};
+const RenderPosition = {
+  AFTERBEGIN: `afterbegin`,
+  AFTEREND: `afterend`,
+  BEFOREEND: `beforeend`
+};
+
+const createElement = (template) => {
+  const newElement = document.createElement(`div`);
+  newElement.innerHTML = template;
+
+  return newElement.firstChild;
+};
+
+const render = (container, element, place) => {
+  switch (place) {
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(element);
+      break;
+    case RenderPosition.AFTEREND:
+      container.after(element);
+      break;
+    case RenderPosition.BEFOREEND:
+      container.append(element);
+      break;
+  }
+};
+
+const getSetFromArray = (arr) => {
+  return Array.from(new Set(arr));
+};
+
+export {render, RenderPosition, createElement, getRandomArrayItem, getRandomNumber, getRandomIntegerNumber, formatDate, formatTime, getSetFromArray};

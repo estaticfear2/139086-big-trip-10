@@ -1,3 +1,5 @@
+import {createElement} from '../utils.js';
+
 const createTripInfoMainMarkup = (list) => {
   const firstPlace = list[0].city;
   const lastPlace = list[list.length - 1].city;
@@ -9,7 +11,7 @@ const createTripInfoMainMarkup = (list) => {
   );
 };
 
-export const createTripInfoMainTemplate = (eventsList) => {
+const createTripInfoMainTemplate = (eventsList) => {
   const tripInfoMarkup = createTripInfoMainMarkup(eventsList);
 
   return (
@@ -18,3 +20,26 @@ export const createTripInfoMainTemplate = (eventsList) => {
       </div>`
   );
 };
+
+export default class TripInfoMain {
+  constructor(eventsList) {
+    this._eventsList = eventsList;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripInfoMainTemplate(this._eventsList);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

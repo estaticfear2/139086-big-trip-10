@@ -1,3 +1,5 @@
+import {createElement} from '../utils.js';
+
 const createMainFilterMarkup = (name, isChecked) => {
   const filterName = name.toLowerCase();
 
@@ -9,7 +11,7 @@ const createMainFilterMarkup = (name, isChecked) => {
   );
 };
 
-export const createMainFilterTemplate = (filters) => {
+const createMainFilterTemplate = (filters) => {
   const filtersMarkup = filters.map((it) => createMainFilterMarkup(it.name, it.ischecked)).join(`\n`);
 
   return (
@@ -19,3 +21,26 @@ export const createMainFilterTemplate = (filters) => {
       </form>`
   );
 };
+
+export default class MainFilter {
+  constructor(filterItems) {
+    this._filterItems = filterItems;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createMainFilterTemplate(this._filterItems);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

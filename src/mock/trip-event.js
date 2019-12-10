@@ -110,7 +110,7 @@ const getEventOffers = () => {
   let count = 0;
 
   eventOffers.forEach(function (it) {
-    if (Math.random() < 0.5 && count <= OFFERS_MAX) {
+    if (Math.random() < 0.5 && count < OFFERS_MAX) {
       it.checked = true;
       count++;
     }

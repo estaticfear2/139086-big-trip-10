@@ -1,3 +1,5 @@
+import {createElement} from '../utils.js';
+
 const createTripDaysMarkup = (dayList) => {
   return dayList.map((it, i) => {
     return (
@@ -16,10 +18,33 @@ const createTripDaysMarkup = (dayList) => {
   }).join(`\n`);
 };
 
-export const createTripEventsListTemplate = (dayList) => {
+const createTripEventsListTemplate = (dayList) => {
   return (
     `<ul class="trip-days">
         ${createTripDaysMarkup(dayList)}
       </ul>`
   );
 };
+
+export default class TripEventsList {
+  constructor(dayList) {
+    this._dayList = dayList;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripEventsListTemplate(this._dayList);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

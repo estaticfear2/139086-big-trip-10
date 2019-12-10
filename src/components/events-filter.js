@@ -1,3 +1,5 @@
+import {createElement} from '../utils.js';
+
 const createEventsFilterMarkup = (filter, isChecked) => {
   const filterName = filter.toLowerCase();
   return (
@@ -8,7 +10,7 @@ const createEventsFilterMarkup = (filter, isChecked) => {
   );
 };
 
-export const createEventsFilterTemplate = (filterItems) => {
+const createEventsFilterTemplate = (filterItems) => {
   const eventsFilterMarkup = filterItems.map((it) => createEventsFilterMarkup(it.name, it.ischecked)).join(`\n`);
 
   return (
@@ -19,3 +21,26 @@ export const createEventsFilterTemplate = (filterItems) => {
       </form>`
   );
 };
+
+export default class EventsFilter {
+  constructor(filterItems) {
+    this._filterItems = filterItems;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEventsFilterTemplate(this._filterItems);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

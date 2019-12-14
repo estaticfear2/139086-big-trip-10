@@ -1,4 +1,4 @@
-import {createElement} from '../utils.js';
+import AbstractComponent from './abstract-component.js';
 
 const createAmountMarkup = (eventsList) => {
   const calculateAmount = () => {
@@ -16,25 +16,13 @@ const createAmountTemplate = (eventsList) => {
   return createAmountMarkup(eventsList);
 };
 
-export default class AmountComponent {
+export default class Amount extends AbstractComponent {
   constructor(eventsList) {
+    super();
     this._eventsList = eventsList;
-    this._element = null;
   }
 
-  getTepmlate() {
+  getTemplate() {
     return createAmountTemplate(this._eventsList);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTepmlate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

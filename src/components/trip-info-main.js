@@ -1,4 +1,4 @@
-import {createElement} from '../utils.js';
+import AbstractComponent from './abstract-component.js';
 
 const createTripInfoMainMarkup = (list) => {
   const firstPlace = list[0].city;
@@ -21,25 +21,13 @@ const createTripInfoMainTemplate = (eventsList) => {
   );
 };
 
-export default class TripInfoMain {
+export default class TripInfoMain extends AbstractComponent {
   constructor(eventsList) {
+    super();
     this._eventsList = eventsList;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripInfoMainTemplate(this._eventsList);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

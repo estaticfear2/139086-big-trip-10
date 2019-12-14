@@ -1,6 +1,9 @@
 import AbstractComponent from './abstract-component.js';
 
 const createTripInfoMainMarkup = (list) => {
+  if (!list.length) {
+    return ``;
+  }
   const firstPlace = list[0].city;
   const lastPlace = list[list.length - 1].city;
 

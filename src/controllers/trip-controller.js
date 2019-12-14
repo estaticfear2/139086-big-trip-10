@@ -47,7 +47,6 @@ export default class TripController {
 
   render(events) {
     const container = this._container;
-    const noEvents = this._noEvents.getElement();
 
     if (!events.length) {
       render(container, this._noEvents, RenderPosition.BEFOREEND);

@@ -2,7 +2,7 @@ import Trip from '../components/trip.js';
 import TripEdit from '../components/trip-edit.js';
 import TripEventsList from '../components/trip-events-list.js';
 import NoEvents from '../components/no-events.js';
-import EventsFilter from '../components/events-filter.js';
+import Sort from '../components/Sort.js';
 import {render, RenderPosition, replace} from '../utils/render.js';
 import {getSetFromArray} from '../utils/common.js';
 
@@ -41,7 +41,7 @@ export default class TripController {
   constructor(container, filters) {
     this._container = container;
     this._noEvents = new NoEvents();
-    this._eventsFilter = new EventsFilter(filters);
+    this._eventsFilter = new Sort(filters);
     this._eventsList = new TripEventsList();
   }
 

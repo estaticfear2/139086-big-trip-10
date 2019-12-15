@@ -22,7 +22,7 @@ const createEventsFilterTemplate = (filterItems) => {
   );
 };
 
-export default class EventsFilter extends AbstractComponent {
+export default class Sort extends AbstractComponent {
   constructor(filterItems) {
     super();
     this._filterItems = filterItems;

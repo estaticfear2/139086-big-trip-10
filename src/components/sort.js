@@ -1,17 +1,42 @@
 import AbstractComponent from './abstract-component.js';
 
-const createEventsFilterMarkup = (filter, isChecked) => {
-  const filterName = filter.toLowerCase();
+export const SortType = {
+  DEFAULT: `sort-event`,
+  TIME: `sort-time`,
+  PRICE: `sort-price`
+};
+
+const createEventsFilterMarkup = () => {
   return (
-    `<div class="trip-sort__item  trip-sort__item--${filterName}">
-        <input id="sort-${filterName}" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-${filterName}" ${isChecked ? `checked` : ``}>
-        <label class="trip-sort__btn" for="sort-event">${filter}</label>
+    `<div class="trip-sort__item  trip-sort__item--event">
+        <input id="sort-event" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-event" checked>
+        <label class="trip-sort__btn" for="sort-event">Event</label>
+      </div>
+
+      <div class="trip-sort__item  trip-sort__item--time">
+        <input id="sort-time" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-time">
+        <label class="trip-sort__btn" for="sort-time">
+          Time
+          <svg class="trip-sort__direction-icon" width="8" height="10" viewBox="0 0 8 10">
+            <path d="M2.888 4.852V9.694H5.588V4.852L7.91 5.068L4.238 0.00999987L0.548 5.068L2.888 4.852Z"/>
+          </svg>
+        </label>
+      </div>
+
+      <div class="trip-sort__item  trip-sort__item--price">
+        <input id="sort-price" class="trip-sort__input  visually-hidden" type="radio" name="trip-sort" value="sort-price">
+        <label class="trip-sort__btn" for="sort-price">
+          Price
+          <svg class="trip-sort__direction-icon" width="8" height="10" viewBox="0 0 8 10">
+            <path d="M2.888 4.852V9.694H5.588V4.852L7.91 5.068L4.238 0.00999987L0.548 5.068L2.888 4.852Z"/>
+          </svg>
+        </label>
       </div>`
   );
 };
 
-const createEventsFilterTemplate = (filterItems) => {
-  const eventsFilterMarkup = filterItems.map((it) => createEventsFilterMarkup(it.name, it.ischecked)).join(`\n`);
+const createEventsFilterTemplate = () => {
+  const eventsFilterMarkup = createEventsFilterMarkup();
 
   return (
     `<form class="trip-events__trip-sort  trip-sort" action="#" method="get">
@@ -23,12 +48,26 @@ const createEventsFilterTemplate = (filterItems) => {
 };
 
 export default class Sort extends AbstractComponent {
-  constructor(filterItems) {
+  constructor() {
     super();
-    this._filterItems = filterItems;
+    this._currentSortType = SortType.DEFAULT;
   }
 
   getTemplate() {
-    return createEventsFilterTemplate(this._filterItems);
+    return createEventsFilterTemplate();
+  }
+
+  setSortTypeChangeHandler(handler) {
+    this.getElement().addEventListener(`click`, (evt) => {
+      const sortType = evt.target.value;
+
+      if (!sortType || sortType === this._currentSortType) {
+        return;
+      }
+
+      this._currentSortType = sortType;
+
+      handler(this._currentSortType);
+    });
   }
 }

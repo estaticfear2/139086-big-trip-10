@@ -5,7 +5,6 @@ import TripInfoMain from './components/trip-info-main.js';
 import Amount from './components/amount.js';
 import {generateMainFilters} from './mock/main-filter.js';
 import {generateSiteMenu} from './mock/site-menu.js';
-import {generateEventsFilter} from './mock/events-filter.js';
 import {generateEventsList} from './mock/trip-event.js';
 import {render, RenderPosition} from './utils/render.js';
 
@@ -17,9 +16,8 @@ render(siteControlsElement.firstElementChild, new SiteMenu(menuItems), RenderPos
 const filters = generateMainFilters();
 render(siteControlsElement, new MainFilter(filters), RenderPosition.BEFOREEND);
 
-const tripEventsFilter = generateEventsFilter();
 const tripEventsElement = document.querySelector(`.trip-events`);
-const tripController = new TripController(tripEventsElement, tripEventsFilter);
+const tripController = new TripController(tripEventsElement);
 
 const eventsList = generateEventsList();
 tripController.render(eventsList);

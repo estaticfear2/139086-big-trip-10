@@ -2,8 +2,6 @@ import Trip from '../components/trip.js';
 import TripEdit from '../components/trip-edit.js';
 import {render, RenderPosition, replace} from '../utils/render.js';
 
-const ESC_CODE = 27;
-
 const EventMode = {
   DEFAULT: `default`,
   EDIT: `edit`
@@ -63,7 +61,7 @@ export default class EventController {
   }
 
   _onEscKeyDown(evt) {
-    const isEscape = (evt.keyCode === ESC_CODE);
+    const isEscape = (evt.key === `Escape` || evt.key === `Esc`);
 
     if (isEscape) {
       this._replaceEventEditComponent();

@@ -1,6 +1,5 @@
 import AbstractComponent from './abstract-component.js';
 import {formatTime} from '../utils/common.js';
-import {eventTypeMap} from '../const.js';
 
 const createOffersMarkup = (offers) => {
   const offersMarkup = offers
@@ -25,9 +24,9 @@ const createTripMarkup = (event) => {
   return (
     `<div class="event">
         <div class="event__type">
-          <img class="event__type-icon" width="42" height="42" src="img/icons/${event.type}.png" alt="${event.type} icon">
+          <img class="event__type-icon" width="42" height="42" src="img/icons/${event.type.name}.png" alt="${event.type.name} icon">
         </div>
-        <h3 class="event__title">${eventTypeMap[event.type]} ${event.city}</h3>
+        <h3 class="event__title">${event.type.description} ${event.city}</h3>
 
         <div class="event__schedule">
           <p class="event__time">

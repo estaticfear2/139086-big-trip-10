@@ -1,17 +1,17 @@
 import {getRandomArrayItem, getRandomIntegerNumber} from '../utils/common.js';
 
-const EVENT_TYPE = [
-  `bus`,
-  `check-in`,
-  `drive`,
-  `flight`,
-  `restaurant`,
-  `ship`,
-  `sightseeing`,
-  `taxi`,
-  `train`,
-  `transport`,
-  `trip`
+export const EVENT_TYPE = [
+  {name: `bus`, group: `Transfer`, description: `Bus to`},
+  {name: `check-in`, group: `Activity`, description: `Check into hotel`},
+  {name: `drive`, group: `Transfer`, description: `Drive to`},
+  {name: `flight`, group: `Transfer`, description: `Flight to`},
+  {name: `restaurant`, group: `Activity`, description: `Restaurant`},
+  {name: `ship`, group: `Transfer`, description: `Ship to`},
+  {name: `sightseeing`, group: `Activity`, description: `Natural History Museum`},
+  {name: `taxi`, group: `Transfer`, description: `Taxi to`},
+  {name: `train`, group: `Transfer`, description: `Train to`},
+  {name: `transport`, group: `Transfer`, description: `Transport`},
+  {name: `trip`, group: `Transfer`, description: `Trip to`}
 ];
 
 const CITIES = [
@@ -53,7 +53,7 @@ const generateRandArrayFromSubArray = (subArray, a, b) => {
   return arr;
 };
 
-const getEventDescription = () => {
+export const getEventDescription = () => {
   return generateRandArrayFromSubArray(SENTENCE_DESCRIPTION, minDescrSentence, maxDescrSentence).join(` `);
 };
 
@@ -72,7 +72,7 @@ const getEventDate = () => {
 };
 
 const OFFERS_MAX = 2;
-const OFFERS = [
+export const OFFERS = [
   {
     type: `luggage`,
     name: `Add luggage`,
@@ -125,9 +125,12 @@ const generateEventPrice = () => {
   return getRandomIntegerNumber(PRICE_MIN, PRICE_MAX);
 };
 
+let index = 1;
+
 const generateEvent = () => {
   const [startDate, endDate] = getEventDate();
   return {
+    id: index++,
     type: getRandomArrayItem(EVENT_TYPE),
     city: getRandomArrayItem(CITIES),
     photo: getSightPhoto(),
@@ -135,7 +138,8 @@ const generateEvent = () => {
     startDate,
     endDate,
     price: generateEventPrice(),
-    offers: getEventOffers()
+    offers: getEventOffers(),
+    isFavorite: Math.random() < 0.5
   };
 };
 

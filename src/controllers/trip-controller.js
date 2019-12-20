@@ -16,7 +16,7 @@ const renderEventsByDate = (container, events, onDataChange, onViewChange) => {
 
     events
       .filter((it) => new Date(it.startDate).toDateString() === date)
-      .map((event) => {
+      .forEach((event) => {
         const eventController = new EventController(tripEventsDayElement, onDataChange, onViewChange);
         eventController.render(event);
 

@@ -610,6 +610,9 @@ main {
   cursor: pointer;
   -webkit-transition: color 0.2s;
   transition: color 0.2s; }
+  .event__type-label::first-letter {
+    text-transform: uppercase;
+  }
   .event__type-label::before {
     content: "";
     position: absolute;
@@ -642,6 +645,8 @@ main {
     background-image: url("../img/icons/sightseeing.png"); }
   .event__type-label--restaurant::before {
     background-image: url("../img/icons/restaurant.png"); }
+.event__type-label--trip::before {
+    background-image: url("../img/icons/trip.png"); }
   .event__type-label:hover {
     color: #ffd054; }
 

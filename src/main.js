@@ -3,6 +3,7 @@ import MainFilter from './components/main-filter.js';
 import TripController from './controllers/trip-controller.js';
 import TripInfoMain from './components/trip-info-main.js';
 import Amount from './components/amount.js';
+import EventsModel from './models/points.js';
 import {generateMainFilters} from './mock/main-filter.js';
 import {generateSiteMenu} from './mock/site-menu.js';
 import {generateEventsList} from './mock/trip-event.js';
@@ -20,6 +21,9 @@ const tripEventsElement = document.querySelector(`.trip-events`);
 const tripController = new TripController(tripEventsElement);
 
 const eventsList = generateEventsList();
+const eventsModel = new EventsModel();
+
+eventsModel.setEvents(eventsList);
 tripController.render(eventsList);
 
 const tripInfoElement = siteMainElement.querySelector(`.trip-info`);

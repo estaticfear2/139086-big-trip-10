@@ -43,9 +43,9 @@ const renderEvents = (container, events, onDataChange, onViewChange) => {
 };
 
 export default class TripController {
-  constructor(container) {
+  constructor(container, eventsModel) {
     this._container = container;
-    this._events = [];
+    this._eventsModel = eventsModel;
     this._eventControllers = [];
     this._noEvents = new NoEvents();
     this._eventsFilter = new Sort();

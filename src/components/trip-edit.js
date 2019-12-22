@@ -1,3 +1,6 @@
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
+
 import AbstractSmartComponent from './abstract-smart-component.js';
 import {formatDate, formatTime} from '../utils/common.js';
 import {EVENT_TYPE, OFFERS, getEventDescription} from '../mock/trip-event.js';
@@ -156,7 +159,9 @@ export default class TripEdit extends AbstractSmartComponent {
     this._event = event;
 
     this._submitHandler = null;
+    this._flatpickr = null;
 
+    this._applyFlatpickr();
     this._subscribeOnEvents();
   }
 
@@ -180,11 +185,32 @@ export default class TripEdit extends AbstractSmartComponent {
 
   rerender() {
     super.rerender();
+    this._applyFlatpickr();
   }
 
   reset() {
     this._event = Object.assign({}, this._event);
     this.rerender();
+  }
+
+  _applyFlatpickr() {
+    if (this._flatpickr) {
+      this._flatpickr.destroy();
+      this._flatpickr = null;
+    }
+
+    const [eventStartDateElement, eventEndDateElement] = this.getElement().querySelectorAll(`.event__input--time`);
+
+    const setFlatpickr = (elem, startDate) => {
+      this._flatpickr = flatpickr(elem, {
+        dateFormat: `d/m/y H:i`,
+        allowInput: true,
+        defaultDate: startDate
+      });
+    };
+
+    setFlatpickr(eventStartDateElement, this._event.startDate);
+    setFlatpickr(eventEndDateElement, this._event.endDate);
   }
 
   _subscribeOnEvents() {

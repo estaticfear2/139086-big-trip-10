@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 const getRandomArrayItem = (array) => {
   const randomIndex = getRandomIntegerNumber(0, array.length - 1);
 
@@ -13,11 +15,11 @@ const getRandomIntegerNumber = (min, max) => {
 };
 
 const formatDate = (date) => {
-  return `${date.getDate()}/${date.getMonth()}/${String(date.getFullYear()).slice(2)}`;
+  return moment(date).format();
 };
 
 const formatTime = (date) => {
-  return `${date.getHours()}:${date.getMinutes() < 10 ? `0${date.getMinutes()}` : date.getMinutes()}`;
+  return moment(date).format(`HH:mm`);
 };
 
 const getSetFromArray = (arr) => {

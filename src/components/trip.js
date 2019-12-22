@@ -1,5 +1,6 @@
 import AbstractComponent from './abstract-component.js';
 import {formatTime} from '../utils/common.js';
+import moment from 'moment';
 
 const createOffersMarkup = (offers) => {
   const offersMarkup = offers
@@ -16,10 +17,31 @@ const createOffersMarkup = (offers) => {
   return offersMarkup;
 };
 
+const getEventDuration = (eventStartDate, eventEndDate) => {
+  const durationTimeStamp = moment.duration(moment(eventEndDate).diff(eventStartDate));
+
+  const durationDays = durationTimeStamp.days();
+  const durationHours = durationTimeStamp.hours();
+  const durationMinutes = durationTimeStamp.minutes();
+  const durationDaysString = durationDays < 10 ? `0${durationDays}D` : `${durationDays}D`;
+  const durationHoursString = durationHours < 10 ? `0${durationHours}H` : `${durationHours}H`;
+  const durationMinutesString = durationMinutes < 10 ? `0${durationMinutes}M` : `${durationMinutes}M`;
+
+  let duration = ``;
+
+  if (durationDays < 1 && durationHours < 1) {
+    duration = durationMinutesString;
+  } else if (durationDays < 1) {
+    duration = `${durationHoursString} ${durationMinutesString}`;
+  } else {
+    duration = `${durationDaysString} ${durationHoursString} ${durationMinutesString}`;
+  }
+
+  return duration;
+};
+
 const createTripMarkup = (event) => {
-  const duration = event.endDate - event.startDate;
-  const durationHours = Math.floor(duration / (1000 * 60 * 60));
-  const durationMinutes = Math.round(duration % (1000 * 60 * 60) / 1000 / 60);
+  const eventDuration = getEventDuration(event.startDate, event.endDate);
 
   return (
     `<div class="event">
@@ -34,7 +56,7 @@ const createTripMarkup = (event) => {
             &mdash;
             <time class="event__end-time" datetime="2019-03-18T11:00">${formatTime(event.endDate)}</time>
           </p>
-          <p class="event__duration">${durationHours}H ${durationMinutes}M</p>
+          <p class="event__duration">${eventDuration}</p>
         </div>
 
         <p class="event__price">

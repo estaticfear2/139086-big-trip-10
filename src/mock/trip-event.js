@@ -58,7 +58,7 @@ export const getEventDescription = () => {
 };
 
 const rangeEventDate = 1000 * 60 * 60 * 72;
-const rangeEventDuration = 1000 * 60 * 60 * 3;
+const rangeEventDuration = 1000 * 60 * 60 * 36;
 
 const getEventDate = () => {
   const startDate = new Date(Date.now() + getRandomIntegerNumber(0, rangeEventDate));

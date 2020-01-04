@@ -10,7 +10,11 @@ const createTripDayInfoMarkup = (date, i) => {
   );
 };
 
-const createTripDaysMarkup = (dayList = [null]) => {
+const createTripDayMarkup = (dayList = []) => {
+  if (!dayList[0]) {
+    dayList[0] = null;
+  }
+
   return dayList.map((it, i) => {
     return (
       `<li class="trip-days__item  day">
@@ -28,7 +32,7 @@ const createTripDaysMarkup = (dayList = [null]) => {
 const createTripEventsListTemplate = (dayList) => {
   return (
     `<ul class="trip-days">
-        ${createTripDaysMarkup(dayList)}
+        ${createTripDayMarkup(dayList)}
       </ul>`
   );
 };

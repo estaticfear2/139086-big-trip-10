@@ -1,18 +1,9 @@
-const mainFilterNames = [
-  {
-    name: `Everything`,
-    ischecked: true
-  },
-  {
-    name: `Future`,
-    ischecked: false
-  },
-  {
-    name: `Past`,
-    ischecked: false
-  }
-];
+const mainFilterNames = [`Everything`, `Future`, `Past`];
 
 export const generateMainFilters = () => {
-  return mainFilterNames;
+  return mainFilterNames.map((it) => {
+    return {
+      name: it
+    };
+  });
 };

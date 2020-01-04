@@ -1,5 +1,11 @@
 import AbstractComponent from './abstract-component.js';
 
+const FILTER_ID_PREFIX = `filter-`;
+
+const getFilterNameById = (id) => {
+  return id.substring(FILTER_ID_PREFIX.length);
+};
+
 const createMainFilterMarkup = (name, isChecked) => {
   const filterName = name.toLowerCase();
 
@@ -12,7 +18,7 @@ const createMainFilterMarkup = (name, isChecked) => {
 };
 
 const createMainFilterTemplate = (filters) => {
-  const filtersMarkup = filters.map((it) => createMainFilterMarkup(it.name, it.ischecked)).join(`\n`);
+  const filtersMarkup = filters.map((it) => createMainFilterMarkup(it.name, it.checked)).join(`\n`);
 
   return (
     `<form class="trip-filters" action="#" method="get">
@@ -30,5 +36,12 @@ export default class MainFilter extends AbstractComponent {
 
   getTemplate() {
     return createMainFilterTemplate(this._filterItems);
+  }
+
+  setFilterChangeHandler(handler) {
+    this.getElement().addEventListener(`change`, (evt) => {
+      const filterName = getFilterNameById(evt.target.id);
+      handler(filterName);
+    });
   }
 }

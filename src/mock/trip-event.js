@@ -61,12 +61,13 @@ const rangeEventDate = 1000 * 60 * 60 * 72;
 const rangeEventDuration = 1000 * 60 * 60 * 36;
 
 const getEventDate = () => {
-  const startDate = new Date(Date.now() + getRandomIntegerNumber(0, rangeEventDate));
+  const sign = Math.random() < 0.5 ? -1 : 1;
+  const startDate = new Date(Date.now() + getRandomIntegerNumber(0, rangeEventDate) * sign * 3);
   let endDate;
 
-  const dur = getRandomIntegerNumber(1000 * 60 * 20, rangeEventDuration);
+  const duration = getRandomIntegerNumber(1000 * 60 * 20, rangeEventDuration);
 
-  endDate = new Date(+startDate + dur);
+  endDate = new Date(+startDate + duration);
 
   return [startDate, endDate];
 };
@@ -152,5 +153,5 @@ export const generateEventsList = (count = EVENT_COUNT) => {
     list.push(generateEvent());
   }
 
-  return list.sort((a, b) => a.startDate - b.startDate);
+  return list;
 };

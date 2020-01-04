@@ -1,9 +1,11 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import moment from 'moment';
 
 import AbstractSmartComponent from './abstract-smart-component.js';
 import {formatDate, formatTime} from '../utils/common.js';
 import {EVENT_TYPE, OFFERS, getEventDescription} from '../mock/trip-event.js';
+import {EventMode} from '../controllers/point-controller.js';
 
 const createEventPhotoMarkup = (list) => {
   return list.map((it) => `<img class="event__photo" src="${it}" alt="Event photo">`).join(`\n`);
@@ -60,9 +62,9 @@ const createEventOffersMarkup = (event) => {
   }).join(`\n`);
 };
 
-const createTripEditMarkup = (event) => {
+const createTripEditMarkup = (event, mode) => {
   return (
-    `<form class="event  event--edit" action="#" method="post">
+    `<form class="${mode === EventMode.ADDING ? `trip-events__item ` : ``} event  event--edit" action="#" method="post">
         <header class="event__header">
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-${event.id}">
@@ -149,24 +151,45 @@ const createTripEditMarkup = (event) => {
   );
 };
 
-const createTripEditTemplate = (event) => {
-  return createTripEditMarkup(event);
+const createTripEditTemplate = (event, mode) => {
+  return createTripEditMarkup(event, mode);
+};
+
+const parseFormData = (formData, event) => {
+  const type = EVENT_TYPE.find((it) => it.name === formData.get(`event-type`));
+  const startDate = moment(formData.get(`event-start-time`), `DD/MM/YY HH:mm`).valueOf();
+  const endDate = moment(formData.get(`event-end-time`), `DD/MM/YY HH:mm`).valueOf();
+
+  return {
+    id: event._event.id,
+    type,
+    city: formData.get(`event-destination`),
+    photo: [],
+    description: ``,
+    startDate: new Date(startDate),
+    endDate: new Date(endDate),
+    price: formData.get(`event-price`),
+    offers: OFFERS,
+    isFavorite: false
+  };
 };
 
 export default class TripEdit extends AbstractSmartComponent {
-  constructor(event) {
+  constructor(event, eventMode) {
     super();
     this._event = event;
+    this._eventMode = eventMode;
 
     this._submitHandler = null;
-    this._flatpickr = null;
+    this._flatpickr = [];
+    this._deleteButtonClickHandler = null;
 
     this._applyFlatpickr();
     this._subscribeOnEvents();
   }
 
   getTemplate() {
-    return createTripEditTemplate(this._event);
+    return createTripEditTemplate(this._event, this._eventMode);
   }
 
   setEditFormSubmitHandler(handler) {
@@ -178,9 +201,25 @@ export default class TripEdit extends AbstractSmartComponent {
     this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`click`, handler);
   }
 
+  setDeleteButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, handler);
+
+    this._deleteButtonClickHandler = handler;
+  }
+
   recoveryListeners() {
     this.setEditFormSubmitHandler(this._submitHandler);
     this._subscribeOnEvents();
+    this.setDeleteButtonClickHandler(this._deleteButtonClickHandler);
+  }
+
+  removeElement() {
+    if (this._flatpickr) {
+      this._flatpickr.forEach((it) => it.destroy());
+      this._flatpickr = [];
+    }
+
+    super.removeElement();
   }
 
   rerender() {
@@ -195,22 +234,30 @@ export default class TripEdit extends AbstractSmartComponent {
 
   _applyFlatpickr() {
     if (this._flatpickr) {
-      this._flatpickr.destroy();
-      this._flatpickr = null;
+      this._flatpickr.forEach((it) => it.destroy());
+      this._flatpickr = [];
     }
 
     const [eventStartDateElement, eventEndDateElement] = this.getElement().querySelectorAll(`.event__input--time`);
 
     const setFlatpickr = (elem, startDate) => {
-      this._flatpickr = flatpickr(elem, {
+
+      return flatpickr(elem, {
         dateFormat: `d/m/y H:i`,
         allowInput: true,
         defaultDate: startDate
       });
     };
 
-    setFlatpickr(eventStartDateElement, this._event.startDate);
-    setFlatpickr(eventEndDateElement, this._event.endDate);
+    this._flatpickr.push(setFlatpickr(eventStartDateElement, this._event.startDate));
+    this._flatpickr.push(setFlatpickr(eventEndDateElement, this._event.endDate));
+  }
+
+  getData() {
+    const formElement = this.getElement();
+    const formData = new FormData(formElement);
+
+    return parseFormData(formData, this);
   }
 
   _subscribeOnEvents() {

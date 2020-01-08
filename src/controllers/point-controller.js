@@ -119,7 +119,11 @@ export default class EventController {
   _replaceEventEditComponent() {
     document.removeEventListener(`keydown`, this._onEscKeyDown);
     this._eventEditComponent.reset();
-    replace(this._eventComponent, this._eventEditComponent);
+
+    if (document.contains(this._eventEditComponent.getElement())) {
+      replace(this._eventComponent, this._eventEditComponent);
+    }
+
     this._eventMode = EventMode.DEFAULT;
   }
 }

@@ -4,6 +4,7 @@ import Sort, {SortType} from '../components/sort.js';
 import {render, RenderPosition} from '../utils/render.js';
 import {getSetFromArray} from '../utils/common.js';
 import EventController, {EventMode, getEmptyEvent} from './point-controller.js';
+import {HIDDEN_CLASS} from '../const.js';
 
 const renderEventsByDate = (container, events, onDataChange, onViewChange) => {
   const dayList = getSetFromArray(events.map((it) => new Date(it.startDate).toDateString()));
@@ -62,6 +63,14 @@ export default class TripController {
 
     this._eventsFilter.setSortTypeChangeHandler(this._onSortTypeChange);
     this._eventsModel.setFilterChangeHandler(this._onFilterChange);
+  }
+
+  hide() {
+    this._container.classList.add(HIDDEN_CLASS);
+  }
+
+  show() {
+    this._container.classList.remove(HIDDEN_CLASS);
   }
 
   render() {

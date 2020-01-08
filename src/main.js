@@ -4,14 +4,16 @@ import TripController from './controllers/trip-controller.js';
 import TripInfoMain from './components/trip-info-main.js';
 import Amount from './components/amount.js';
 import EventsModel from './models/points.js';
-import {generateSiteMenu} from './mock/site-menu.js';
+import Statistics from './components/statistics.js';
+import {MenuItem} from './const.js';
+
 import {generateEventsList} from './mock/trip-event.js';
 import {render, RenderPosition} from './utils/render.js';
 
 const siteMainElement = document.querySelector(`.trip-main`);
 const siteControlsElement = siteMainElement.querySelector(`.trip-controls`);
-const menuItems = generateSiteMenu();
-const siteMenuComponent = new SiteMenu(menuItems);
+
+const siteMenuComponent = new SiteMenu();
 
 siteMainElement.querySelector(`.trip-main__event-add-btn`).addEventListener(`click`, () => tripController.createEvent());
 
@@ -29,6 +31,25 @@ filterController.render();
 
 const tripController = new TripController(tripEventsElement, eventsModel);
 tripController.render();
+
+const statisticsComponent = new Statistics(eventsModel);
+render(tripEventsElement, statisticsComponent, RenderPosition.AFTEREND);
+statisticsComponent.hide();
+
+siteMenuComponent.setOnChange((menuItem) => {
+  siteMenuComponent.setActiveItem(menuItem);
+
+  switch (menuItem.textContent) {
+    case MenuItem.TABLE:
+      tripController.show();
+      statisticsComponent.hide();
+      break;
+    case MenuItem.STATS:
+      statisticsComponent.show();
+      tripController.hide();
+      break;
+  }
+});
 
 const tripInfoElement = siteMainElement.querySelector(`.trip-info`);
 render(tripInfoElement, new TripInfoMain(eventsList), RenderPosition.AFTERBEGIN);

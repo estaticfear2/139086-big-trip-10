@@ -935,3 +935,7 @@ main {
 
 .statistics__item:not(:last-child) {
   margin-bottom: 78px; }
+
+.statistics__chart {
+  background-color: #edecec;
+}

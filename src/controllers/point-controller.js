@@ -2,6 +2,8 @@ import Trip from '../components/trip.js';
 import TripEdit from '../components/trip-edit.js';
 import {render, RenderPosition, replace, remove} from '../utils/render.js';
 import {OFFERS, EVENT_TYPE} from '../mock/trip-event.js';
+import moment from 'moment';
+import EventModel from '../models/event.js';
 
 export const EventMode = {
   DEFAULT: `default`,
@@ -24,10 +26,36 @@ export const getEmptyEvent = (id) => {
   });
 };
 
+const parseFormData = (formData, event, destinations, offers) => {
+  const type = formData.get(`event-type`);
+  const city = formData.get(`event-destination`);
+  const eventOffers = offers.filter((it) => it.type === type)[0].offers;
+  const checkedOffers = eventOffers.filter((it, i) => {
+    return formData.get(`event-offer-${i}`) === `on`;
+  });
+
+  const startDate = moment(formData.get(`event-start-time`), `DD/MM/YY HH:mm`).valueOf();
+  const endDate = moment(formData.get(`event-end-time`), `DD/MM/YY HH:mm`).valueOf();
+
+  return new EventModel({
+    'base_price': +formData.get(`event-price`),
+    'date_from': new Date(startDate),
+    'date_to': new Date(endDate),
+    'destination': {
+      'description': event.description,
+      'name': city,
+      'pictures': event.photo
+    },
+    'id': event.id,
+    'is_favorite': formData.get(`event-favorite`) === `on`,
+    "offers": checkedOffers,
+    'type': type
+  });
+};
+
 export default class EventController {
   constructor(container, onDataChange, onViewChange) {
     this._container = container;
-
     this._onDataChange = onDataChange;
     this._onViewChange = onViewChange;
 
@@ -38,13 +66,13 @@ export default class EventController {
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
   }
 
-  render(event, mode) {
+  render(event, destinations, offers, mode) {
     const oldEvent = this._eventComponent;
     const oldEventEdit = this._eventEditComponent;
+    const eventOffers = offers;
     this._eventMode = mode;
-
     this._eventComponent = new Trip(event);
-    this._eventEditComponent = new TripEdit(event, mode);
+    this._eventEditComponent = new TripEdit(event, destinations, eventOffers, mode);
 
     this._eventComponent.setEditButtonClickHandler(() => {
       this._replaceEventComponent();
@@ -52,15 +80,18 @@ export default class EventController {
     });
 
     this._eventEditComponent.setFavoriteButtonClickHandler(() => {
-      this._onDataChange(this, event, Object.assign({}, event, {
-        isFavorite: !event.isFavorite
-      }));
+      const newEvent = EventModel.clone(event);
+      newEvent.isFavorite = !newEvent.isFavorite;
+
+      this._onDataChange(this, event, newEvent);
     });
 
     this._eventEditComponent.setEditFormSubmitHandler((evt) => {
       evt.preventDefault();
 
-      const data = this._eventEditComponent.getData();
+      const formData = this._eventEditComponent.getData();
+      const data = parseFormData(formData, event, destinations, offers);
+
       this._onDataChange(this, event, data);
     });
 

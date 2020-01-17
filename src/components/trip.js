@@ -4,10 +4,9 @@ import moment from 'moment';
 
 const createOffersMarkup = (offers) => {
   const offersMarkup = offers
-    .filter((it) => it.checked)
     .map((it) => {
       return `<li class="event__offer">
-                <span class="event__offer-title">${it.name}</span>
+                <span class="event__offer-title">${it.title}</span>
                 &plus;
                 &euro;&nbsp;<span class="event__offer-price">${it.price}</span>
               </li>`;

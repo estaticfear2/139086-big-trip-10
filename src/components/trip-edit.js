@@ -1,14 +1,13 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-import moment from 'moment';
 
 import AbstractSmartComponent from './abstract-smart-component.js';
 import {formatDate, formatTime} from '../utils/common.js';
-import {EVENT_TYPE, OFFERS, getEventDescription} from '../mock/trip-event.js';
+import {EVENT_TYPE} from '../mock/trip-event.js';
 import {EventMode} from '../controllers/point-controller.js';
 
 const createEventPhotoMarkup = (list) => {
-  return list.map((it) => `<img class="event__photo" src="${it}" alt="Event photo">`).join(`\n`);
+  return list.map((it) => `<img class="event__photo" src="${it.src}" alt="${it.description}">`).join(`\n`);
 };
 
 const createEventTypeMarkup = (eventType, eventID, eventGroup) => {
@@ -47,13 +46,25 @@ const createEventTypeListMarkup = (event) => {
   );
 };
 
-const createEventOffersMarkup = (event) => {
-  return event.offers.map((it) => {
+const createEventDestinationsMarkup = (destinations) => {
+  return destinations.map((it) => {
+    return (
+      `<option value="${it.name}"></option>`
+    );
+  }).join(`/n`);
+};
+
+const createEventOffersMarkup = (offers, event) => {
+  const eventOffers = offers.find((it) => it.type === event.type.name).offers;
+
+  return eventOffers.map((it, i) => {
+    const isOfferChecked = event.offers.find((offer) => offer.title === it.title);
+
     return (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${it.type}-${event.id}" type="checkbox" name="event-offer-${it.type}" ${it.checked ? `checked` : ``}>
-        <label class="event__offer-label" for="event-offer-${it.type}-${event.id}">
-          <span class="event__offer-title">${it.name}</span>
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${i}-${event.id}" type="checkbox" name="event-offer-${i}" ${isOfferChecked ? `checked` : ``}>
+        <label class="event__offer-label" for="event-offer-${i}-${event.id}">
+          <span class="event__offer-title">${it.title}</span>
           &plus;
           &euro;&nbsp;<span class="event__offer-price">${it.price}</span>
         </label>
@@ -62,7 +73,7 @@ const createEventOffersMarkup = (event) => {
   }).join(`\n`);
 };
 
-const createTripEditMarkup = (event, mode) => {
+const createTripEditMarkup = (event, destinations, offers, mode) => {
   return (
     `<form class="${mode === EventMode.ADDING ? `trip-events__item ` : ``} event  event--edit" action="#" method="post">
         <header class="event__header">
@@ -84,9 +95,7 @@ const createTripEditMarkup = (event, mode) => {
             </label>
             <input class="event__input  event__input--destination" id="event-destination-${event.id}" type="text" name="event-destination" value="${event.city}" list="destination-list-${event.id}">
             <datalist id="destination-list-${event.id}">
-              <option value="Amsterdam"></option>
-              <option value="Geneva"></option>
-              <option value="Chamonix"></option>
+              ${createEventDestinationsMarkup(destinations)}
             </datalist>
           </div>
 
@@ -132,7 +141,7 @@ const createTripEditMarkup = (event, mode) => {
             <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
             <div class="event__available-offers">
-              ${createEventOffersMarkup(event)}
+              ${createEventOffersMarkup(offers, event)}
             </div>
           </section>
 
@@ -151,33 +160,16 @@ const createTripEditMarkup = (event, mode) => {
   );
 };
 
-const createTripEditTemplate = (event, mode) => {
-  return createTripEditMarkup(event, mode);
-};
-
-const parseFormData = (formData, event) => {
-  const type = EVENT_TYPE.find((it) => it.name === formData.get(`event-type`));
-  const startDate = moment(formData.get(`event-start-time`), `DD/MM/YY HH:mm`).valueOf();
-  const endDate = moment(formData.get(`event-end-time`), `DD/MM/YY HH:mm`).valueOf();
-
-  return {
-    id: event._event.id,
-    type,
-    city: formData.get(`event-destination`),
-    photo: [],
-    description: ``,
-    startDate: new Date(startDate),
-    endDate: new Date(endDate),
-    price: formData.get(`event-price`),
-    offers: OFFERS,
-    isFavorite: false
-  };
+const createTripEditTemplate = (event, destinations, offers, mode) => {
+  return createTripEditMarkup(event, destinations, offers, mode);
 };
 
 export default class TripEdit extends AbstractSmartComponent {
-  constructor(event, eventMode) {
+  constructor(event, destinations, offers, eventMode) {
     super();
     this._event = event;
+    this._destinations = destinations;
+    this._offers = offers;
     this._eventMode = eventMode;
 
     this._submitHandler = null;
@@ -189,7 +181,7 @@ export default class TripEdit extends AbstractSmartComponent {
   }
 
   getTemplate() {
-    return createTripEditTemplate(this._event, this._eventMode);
+    return createTripEditTemplate(this._event, this._destinations, this._offers, this._eventMode);
   }
 
   setEditFormSubmitHandler(handler) {
@@ -255,9 +247,8 @@ export default class TripEdit extends AbstractSmartComponent {
 
   getData() {
     const formElement = this.getElement();
-    const formData = new FormData(formElement);
 
-    return parseFormData(formData, this);
+    return new FormData(formElement);
   }
 
   _subscribeOnEvents() {
@@ -274,8 +265,7 @@ export default class TripEdit extends AbstractSmartComponent {
         const eventType = EVENT_TYPE.find((it) => it.name === evt.target.value);
 
         this._event = Object.assign({}, this._event,
-            {type: eventType},
-            {offers: OFFERS}
+            {type: eventType}
         );
 
         this.rerender();
@@ -284,9 +274,14 @@ export default class TripEdit extends AbstractSmartComponent {
 
     const eventDestinationElement = element.querySelector(`.event__input--destination`);
     eventDestinationElement.addEventListener(`change`, (evt) => {
+      const city = evt.target.value;
+      const [{description, pictures}] = this._destinations
+        .filter((it) => it.name === city);
+
       this._event = Object.assign({}, this._event,
-          {city: evt.target.value},
-          {description: getEventDescription()}
+          {city},
+          {description},
+          {photo: pictures}
       );
 
       this.rerender();

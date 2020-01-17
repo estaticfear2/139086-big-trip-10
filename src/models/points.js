@@ -68,8 +68,4 @@ export default class Events {
 
     return true;
   }
-
-//  _callHandler(handler) {
-//    handler();
-//  }
 }

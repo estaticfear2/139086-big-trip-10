@@ -6,6 +6,12 @@ import {formatDate, formatTime} from '../utils/common.js';
 import {EVENT_TYPE} from '../mock/trip-event.js';
 import {EventMode} from '../controllers/point-controller.js';
 
+const DefaultData = {
+  deleteButtonText: `Delete`,
+  saveButtonText: `Save`,
+  isBlocked: false
+};
+
 const createEventPhotoMarkup = (list) => {
   return list.map((it) => `<img class="event__photo" src="${it.src}" alt="${it.description}">`).join(`\n`);
 };
@@ -73,7 +79,10 @@ const createEventOffersMarkup = (offers, event) => {
   }).join(`\n`);
 };
 
-const createTripEditMarkup = (event, destinations, offers, mode) => {
+const createTripEditMarkup = (event, destinations, offers, mode, externalData) => {
+  const deleteButtonText = externalData.deleteButtonText;
+  const saveButtonText = externalData.saveButtonText;
+  const isBlocked = externalData.isBlocked;
   return (
     `<form class="${mode === EventMode.ADDING ? `trip-events__item ` : ``} event  event--edit" action="#" method="post">
         <header class="event__header">
@@ -119,8 +128,8 @@ const createTripEditMarkup = (event, destinations, offers, mode) => {
             <input class="event__input  event__input--price" id="event-price-${event.id}" type="text" name="event-price" value="${event.price}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlocked ? `disabled` : ``}>${saveButtonText}</button>
+          <button class="event__reset-btn" type="reset" ${isBlocked ? `disabled` : ``}>${deleteButtonText}</button>
 
           <input id="event-favorite-${event.id}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${event.isFavorite ? `checked` : ``}>
           <label class="event__favorite-btn" for="event-favorite-${event.id}">
@@ -160,8 +169,8 @@ const createTripEditMarkup = (event, destinations, offers, mode) => {
   );
 };
 
-const createTripEditTemplate = (event, destinations, offers, mode) => {
-  return createTripEditMarkup(event, destinations, offers, mode);
+const createTripEditTemplate = (event, destinations, offers, mode, externalData) => {
+  return createTripEditMarkup(event, destinations, offers, mode, externalData);
 };
 
 export default class TripEdit extends AbstractSmartComponent {
@@ -171,6 +180,7 @@ export default class TripEdit extends AbstractSmartComponent {
     this._destinations = destinations;
     this._offers = offers;
     this._eventMode = eventMode;
+    this._externalData = DefaultData;
 
     this._submitHandler = null;
     this._flatpickr = [];
@@ -181,7 +191,7 @@ export default class TripEdit extends AbstractSmartComponent {
   }
 
   getTemplate() {
-    return createTripEditTemplate(this._event, this._destinations, this._offers, this._eventMode);
+    return createTripEditTemplate(this._event, this._destinations, this._offers, this._eventMode, this._externalData);
   }
 
   setEditFormSubmitHandler(handler) {
@@ -249,6 +259,12 @@ export default class TripEdit extends AbstractSmartComponent {
     const formElement = this.getElement();
 
     return new FormData(formElement);
+  }
+
+  setData(data, event) {
+    this._event = event;
+    this._externalData = Object.assign({}, DefaultData, data);
+    this.rerender();
   }
 
   _subscribeOnEvents() {

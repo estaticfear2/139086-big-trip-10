@@ -55,7 +55,6 @@ export default class TripController {
     this._noEvents = new NoEvents();
     this._eventsFilter = new Sort();
     this._eventsList = new TripEventsList();
-    this._newEventId = null;
 
     this._creatingEvent = null;
 
@@ -128,15 +127,13 @@ export default class TripController {
     }
 
     const eventListElement = this._container.lastElementChild;
-    this._creatingEvent = new EventController(eventListElement, this._destinationsModel.getDestinations(), this._onDataChange, this._onViewChange);
-    this._newEventId = this._eventsModel._events.length + 1;
-    this._creatingEvent.render(getEmptyEvent(this._newEventId), this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.ADDING);
+    this._creatingEvent = new EventController(eventListElement, this._onDataChange, this._onViewChange);
+    this._creatingEvent.render(getEmptyEvent, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.ADDING);
   }
 
   _removeEvents() {
     const eventListElement = this._container.lastElementChild;
     eventListElement.innerHTML = ``;
-    //    this._eventControllers.forEach((eventController) => eventController.destroy());
     this._eventControllers = [];
   }
 
@@ -160,18 +157,30 @@ export default class TripController {
         eventController.destroy();
         this._updateEvents();
       } else {
-        this._eventsModel.addEvent(newData);
-        eventController.render(newData, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.DEFAULT);
-        this._onSortTypeChange(SortType.DEFAULT);
+        this._api.createEvent(newData)
+          .then((eventModel) => {
+            this._eventsModel.addEvent(eventModel);
+            eventController.render(eventModel, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.DEFAULT);
 
-        const destroyedEvent = this._eventControllers.pop();
-        destroyedEvent.destroy();
+            const destroyedEvent = this._eventControllers.pop();
+            destroyedEvent.destroy();
 
-        this._eventControllers = [].concat(eventController, this._eventControllers);
+            this._eventControllers = [].concat(eventController, this._eventControllers);
+            this._onSortTypeChange(SortType.DEFAULT);
+          })
+          .catch(() => {
+            eventController.shake();
+          });
       }
     } else if (newData === null) {
-      this._eventsModel.removeEvent(oldData.id);
-      this._updateEvents();
+      this._api.deleteEvent(oldData.id)
+        .then(() => {
+          this._eventsModel.removeEvent(oldData.id);
+          this._updateEvents();
+        })
+        .catch(() => {
+          eventController.shake();
+        });
     } else {
       this._api.updateEvent(oldData.id, newData)
         .then((eventModel) => {
@@ -181,6 +190,9 @@ export default class TripController {
             eventController.render(eventModel, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.DEFAULT);
             this._updateEvents();
           }
+        })
+        .catch(() => {
+          eventController.shake();
         });
     }
   }

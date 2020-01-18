@@ -20,9 +20,9 @@ export default class Event {
       'date_from': this.startDate,
       'date_to': this.endDate,
       'destination': {
-        "description": this.description,
-        "name": this.city,
-        "pictures": this.photo,
+        'description': this.description,
+        'name': this.city,
+        'pictures': this.photo,
       },
       'is_favorite': this.isFavorite,
       'offers': this.offers,

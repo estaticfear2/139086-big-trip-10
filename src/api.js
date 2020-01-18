@@ -37,8 +37,16 @@ export default class API {
       .then((response) => response.json());
   }
 
-  //  createEvent(event) {
-  //  }
+  createEvent(event) {
+    return this._load({
+      url: `points`,
+      method: Method.POST,
+      body: JSON.stringify(event.toRAW()),
+      headers: new Headers({'Content-Type': `application/json`})
+    })
+      .then((response) => response.json())
+      .then(Event.parseEvent);
+  }
 
   updateEvent(id, data) {
     return this._load({
@@ -51,9 +59,9 @@ export default class API {
       .then(Event.parseEvent);
   }
 
-  //  deleteEvent(id) {
-  //
-  //  }
+  deleteEvent(id) {
+    return this._load({url: `points/${id}`, method: Method.DELETE});
+  }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {
     headers.append(`Authorization`, this._authorization);

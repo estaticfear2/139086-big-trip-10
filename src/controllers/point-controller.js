@@ -1,9 +1,11 @@
 import Trip from '../components/trip.js';
 import TripEdit from '../components/trip-edit.js';
 import {render, RenderPosition, replace, remove} from '../utils/render.js';
-import {OFFERS, EVENT_TYPE} from '../mock/trip-event.js';
+import {EVENT_TYPE} from '../mock/trip-event.js';
 import moment from 'moment';
 import EventModel from '../models/event.js';
+
+const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export const EventMode = {
   DEFAULT: `default`,
@@ -11,24 +13,23 @@ export const EventMode = {
   ADDING: `adding`
 };
 
-export const getEmptyEvent = (id) => {
-  return ({
-    id,
-    type: EVENT_TYPE[0],
-    city: ``,
-    photo: [],
-    description: ``,
-    startDate: Date.now(),
-    endDate: Date.now(),
-    price: 0,
-    offers: OFFERS,
-    isFavorite: false
-  });
+export const getEmptyEvent = {
+  type: EVENT_TYPE[0],
+  city: ``,
+  photo: [],
+  description: ``,
+  startDate: Date.now(),
+  endDate: Date.now(),
+  price: 0,
+  offers: [],
+  isFavorite: false
 };
 
 const parseFormData = (formData, event, destinations, offers) => {
   const type = formData.get(`event-type`);
   const city = formData.get(`event-destination`);
+
+  const [{description, pictures}] = destinations.filter((it) => it.name === city);
   const eventOffers = offers.filter((it) => it.type === type)[0].offers;
   const checkedOffers = eventOffers.filter((it, i) => {
     return formData.get(`event-offer-${i}`) === `on`;
@@ -42,9 +43,9 @@ const parseFormData = (formData, event, destinations, offers) => {
     'date_from': new Date(startDate),
     'date_to': new Date(endDate),
     'destination': {
-      'description': event.description,
+      description,
       'name': city,
-      'pictures': event.photo
+      pictures
     },
     'id': event.id,
     'is_favorite': formData.get(`event-favorite`) === `on`,
@@ -69,10 +70,9 @@ export default class EventController {
   render(event, destinations, offers, mode) {
     const oldEvent = this._eventComponent;
     const oldEventEdit = this._eventEditComponent;
-    const eventOffers = offers;
     this._eventMode = mode;
     this._eventComponent = new Trip(event);
-    this._eventEditComponent = new TripEdit(event, destinations, eventOffers, mode);
+    this._eventEditComponent = new TripEdit(event, destinations, offers, mode);
 
     this._eventComponent.setEditButtonClickHandler(() => {
       this._replaceEventComponent();
@@ -92,10 +92,22 @@ export default class EventController {
       const formData = this._eventEditComponent.getData();
       const data = parseFormData(formData, event, destinations, offers);
 
+      this._eventEditComponent.setData({
+        saveButtonText: `Saving...`,
+        isBlocked: true
+      }, data);
+
       this._onDataChange(this, event, data);
     });
 
-    this._eventEditComponent.setDeleteButtonClickHandler(() => this._onDataChange(this, event, null));
+    this._eventEditComponent.setDeleteButtonClickHandler(() => {
+      this._eventEditComponent.setData({
+        deleteButtonText: `Deletinf...`,
+        isBlocked: true
+      }, event);
+
+      this._onDataChange(this, event, null);
+    });
 
     switch (mode) {
       case EventMode.DEFAULT:
@@ -130,12 +142,29 @@ export default class EventController {
     document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
+  shake() {
+    this._eventEditComponent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+    this._eventComponent.getElement().style.animation = `shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s`;
+    this._eventEditComponent.getElement().classList.add(`event--error`);
+
+    setTimeout(() => {
+      this._eventEditComponent.getElement().style.animation = ``;
+      this._eventComponent.getElement().style.animation = ``;
+      this._eventEditComponent.getElement().classList.remove(`event--error`);
+
+      this._eventEditComponent.setData({
+        saveButtonText: `Save`,
+        deleteButtonText: `Delete`
+      }, this._eventEditComponent._event);
+    }, SHAKE_ANIMATION_TIMEOUT);
+  }
+
   _onEscKeyDown(evt) {
     const isEscape = (evt.key === `Escape` || evt.key === `Esc`);
 
     if (isEscape) {
       if (this._eventMode === EventMode.ADDING) {
-        this._onDataChange(this, getEmptyEvent(this._eventComponent.id), null);
+        this._onDataChange(this, getEmptyEvent, null);
       }
       this._replaceEventEditComponent();
     }

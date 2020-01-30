@@ -13,16 +13,19 @@ export const EventMode = {
   ADDING: `adding`
 };
 
-export const getEmptyEvent = {
-  type: EVENT_TYPE[0],
-  city: ``,
-  photo: [],
-  description: ``,
-  startDate: Date.now(),
-  endDate: Date.now(),
-  price: 0,
-  offers: [],
-  isFavorite: false
+export const getEmptyEvent = (id) => {
+  return ({
+    id,
+    type: EVENT_TYPE[0],
+    city: ``,
+    photo: [],
+    description: ``,
+    startDate: Date.now(),
+    endDate: Date.now(),
+    price: 0,
+    offers: [],
+    isFavorite: false
+  });
 };
 
 const parseFormData = (formData, event, destinations, offers) => {
@@ -125,7 +128,7 @@ export default class EventController {
           remove(oldEventEdit);
         }
         document.addEventListener(`keydown`, this._onEscKeyDown);
-        render(this._container, this._eventEditComponent, RenderPosition.AFTERBEGIN);
+        render(this._container.lastElementChild, this._eventEditComponent, RenderPosition.AFTERBEGIN);
         break;
     }
   }
@@ -164,7 +167,8 @@ export default class EventController {
 
     if (isEscape) {
       if (this._eventMode === EventMode.ADDING) {
-        this._onDataChange(this, getEmptyEvent, null);
+        this._onDataChange(this, getEmptyEvent(this._eventComponent.id), null);
+        this._eventEditComponent.reset();
       }
       this._replaceEventEditComponent();
     }
@@ -185,5 +189,9 @@ export default class EventController {
     }
 
     this._eventMode = EventMode.DEFAULT;
+  }
+
+  removeFlatpickr() {
+    this._eventEditComponent.removeFlatpickr();
   }
 }

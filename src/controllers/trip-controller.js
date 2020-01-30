@@ -1,7 +1,9 @@
 import TripEventsList from '../components/trip-events-list.js';
 import NoEvents from '../components/no-events.js';
 import Sort, {SortType} from '../components/sort.js';
-import {render, RenderPosition} from '../utils/render.js';
+import TripInfoMain from '../components/trip-info-main.js';
+import Amount from '../components/amount.js';
+import {render, RenderPosition, remove} from '../utils/render.js';
 import {getSetFromArray} from '../utils/common.js';
 import EventController, {EventMode, getEmptyEvent} from './point-controller.js';
 import {HIDDEN_CLASS} from '../const.js';
@@ -55,7 +57,10 @@ export default class TripController {
     this._noEvents = new NoEvents();
     this._eventsFilter = new Sort();
     this._eventsList = new TripEventsList();
+    this._tripInfoMain = null;
+    this._tripAmount = null;
 
+    this._tripInfoElement = null;
     this._creatingEvent = null;
 
     this._onDataChange = this._onDataChange.bind(this);
@@ -126,24 +131,42 @@ export default class TripController {
       return;
     }
 
-    const eventListElement = this._container.lastElementChild;
+    this._onViewChange();
+
+    if (!this._eventsModel.getEventsAll().length) {
+      remove(this._noEvents);
+    }
+
+    const eventListElement = this._container;
     this._creatingEvent = new EventController(eventListElement, this._onDataChange, this._onViewChange);
-    this._creatingEvent.render(getEmptyEvent, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.ADDING);
+    const newEventId = this._eventsModel._events.length;
+    this._creatingEvent.render(getEmptyEvent(newEventId), this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.ADDING);
   }
 
   _removeEvents() {
     const eventListElement = this._container.lastElementChild;
     eventListElement.innerHTML = ``;
+
+    this._eventControllers.forEach((it) => it.removeFlatpickr());
     this._eventControllers = [];
   }
 
   _updateEvents() {
     this._removeEvents();
+
     this._renderEvents(this._eventsModel.getEvents());
   }
 
   _renderEvents(events) {
     const eventListElement = this._container.lastElementChild;
+
+    if (!this._eventsModel.getEventsAll().length) {
+      remove(this._eventsFilter);
+
+      render(this._container, this._noEvents, RenderPosition.BEFOREEND);
+      return;
+    }
+
     const newEvents = renderEventsByDate(eventListElement, events, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), this._onDataChange, this._onViewChange);
     this._eventControllers = this._eventControllers.concat(newEvents);
   }
@@ -167,6 +190,7 @@ export default class TripController {
 
             this._eventControllers = [].concat(eventController, this._eventControllers);
             this._onSortTypeChange(SortType.DEFAULT);
+            this.renderTripInfo();
           })
           .catch(() => {
             eventController.shake();
@@ -176,7 +200,9 @@ export default class TripController {
       this._api.deleteEvent(oldData.id)
         .then(() => {
           this._eventsModel.removeEvent(oldData.id);
+
           this._updateEvents();
+          this.renderTripInfo();
         })
         .catch(() => {
           eventController.shake();
@@ -189,6 +215,7 @@ export default class TripController {
           if (isSuccess) {
             eventController.render(eventModel, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.DEFAULT);
             this._updateEvents();
+            this.renderTripInfo();
           }
         })
         .catch(() => {
@@ -197,11 +224,32 @@ export default class TripController {
     }
   }
 
+  renderTripInfo(container) {
+    if (container) {
+      this._tripInfoElement = container;
+    }
+
+    if (this._tripInfoMain) {
+      remove(this._tripInfoMain);
+      remove(this._tripAmount);
+    }
+
+    this._tripInfoMain = new TripInfoMain(this._eventsModel.getEvents());
+    this._tripAmount = new Amount(this._eventsModel.getEvents());
+
+    render(this._tripInfoElement, this._tripInfoMain, RenderPosition.AFTERBEGIN);
+    render(this._tripInfoElement, this._tripAmount, RenderPosition.BEFOREEND);
+  }
+
   _onViewChange() {
     this._eventControllers.forEach((it) => it.setDefaultView());
   }
 
   _onFilterChange() {
+    this._updateEvents();
+  }
+
+  rerender() {
     this._updateEvents();
   }
 }

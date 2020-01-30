@@ -9,7 +9,9 @@ import {EventMode} from '../controllers/point-controller.js';
 const DefaultData = {
   deleteButtonText: `Delete`,
   saveButtonText: `Save`,
-  isBlocked: false
+  isBlocked: false,
+  isVisibleOffers: true,
+  isVisibleDestination: true
 };
 
 const createEventPhotoMarkup = (list) => {
@@ -82,7 +84,12 @@ const createEventOffersMarkup = (offers, event) => {
 const createTripEditMarkup = (event, destinations, offers, mode, externalData) => {
   const deleteButtonText = externalData.deleteButtonText;
   const saveButtonText = externalData.saveButtonText;
-  const isBlocked = externalData.isBlocked;
+  const isVisibleOffers = externalData.isVisibleOffers;
+  const isVisibleDestination = externalData.isVisibleDestination;
+  const eventOffersMarkup = createEventOffersMarkup(offers, event);
+
+  const disabledElement = externalData.isBlocked ? `disabled` : ``;
+
   return (
     `<form class="${mode === EventMode.ADDING ? `trip-events__item ` : ``} event  event--edit" action="#" method="post">
         <header class="event__header">
@@ -91,7 +98,7 @@ const createTripEditMarkup = (event, destinations, offers, mode, externalData) =
               <span class="visually-hidden">Choose event type</span>
               <img class="event__type-icon" width="17" height="17" src="img/icons/${event.type.name}.png" alt="${event.type.name} icon">
             </label>
-            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${event.id}" type="checkbox">
+            <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${event.id}" type="checkbox" ${disabledElement}>
 
             <div class="event__type-list">
               ${createEventTypeListMarkup(event)}
@@ -102,7 +109,7 @@ const createTripEditMarkup = (event, destinations, offers, mode, externalData) =
             <label class="event__label  event__type-output" for="event-destination-${event.id}">
               ${event.type.description}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-${event.id}" type="text" name="event-destination" value="${event.city}" list="destination-list-${event.id}">
+            <input class="event__input  event__input--destination" id="event-destination-${event.id}" type="text" name="event-destination" value="${event.city}" list="destination-list-${event.id}" required ${disabledElement}>
             <datalist id="destination-list-${event.id}">
               ${createEventDestinationsMarkup(destinations)}
             </datalist>
@@ -112,12 +119,12 @@ const createTripEditMarkup = (event, destinations, offers, mode, externalData) =
             <label class="visually-hidden" for="event-start-time-${event.id}">
               From
             </label>
-            <input class="event__input  event__input--time" id="event-start-time-${event.id}" type="text" name="event-start-time" value="${formatDate(event.startDate)} ${formatTime(event.startDate)}">
+            <input class="event__input  event__input--time" id="event-start-time-${event.id}" type="text" name="event-start-time" value="${formatDate(event.startDate)} ${formatTime(event.startDate)}" ${disabledElement}>
             &mdash;
             <label class="visually-hidden" for="event-end-time-${event.id}">
               To
             </label>
-            <input class="event__input  event__input--time" id="event-end-time-${event.id}" type="text" name="event-end-time" value="${formatDate(event.endDate)} ${formatTime(event.endDate)}">
+            <input class="event__input  event__input--time" id="event-end-time-${event.id}" type="text" name="event-end-time" value="${formatDate(event.endDate)} ${formatTime(event.endDate)}" ${disabledElement}>
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -125,13 +132,13 @@ const createTripEditMarkup = (event, destinations, offers, mode, externalData) =
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-${event.id}" type="text" name="event-price" value="${event.price}">
+            <input class="event__input  event__input--price" id="event-price-${event.id}" type="text" name="event-price" value="${event.price}" required ${disabledElement}>
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit" ${isBlocked ? `disabled` : ``}>${saveButtonText}</button>
-          <button class="event__reset-btn" type="reset" ${isBlocked ? `disabled` : ``}>${deleteButtonText}</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit" ${disabledElement}>${saveButtonText}</button>
+          <button class="event__reset-btn" type="reset" ${disabledElement}>${deleteButtonText}</button>
 
-          <input id="event-favorite-${event.id}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${event.isFavorite ? `checked` : ``}>
+          <input id="event-favorite-${event.id}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${event.isFavorite ? `checked` : ``} ${disabledElement}>
           <label class="event__favorite-btn" for="event-favorite-${event.id}">
             <span class="visually-hidden">Add to favorite</span>
             <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -144,17 +151,17 @@ const createTripEditMarkup = (event, destinations, offers, mode, externalData) =
           </button>
         </header>
 
-        <section class="event__details">
+        <section class="event__details ${isVisibleOffers || isVisibleDestination ? `` : `visually-hidden`}">
 
-          <section class="event__section  event__section--offers">
+          ${eventOffersMarkup ? `<section class="event__section  event__section--offers ${isVisibleOffers ? `` : `visually-hidden`}">
             <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
             <div class="event__available-offers">
-              ${createEventOffersMarkup(offers, event)}
+              ${eventOffersMarkup}
             </div>
-          </section>
+          </section>` : ``}
 
-          <section class="event__section  event__section--destination">
+          <section class="event__section  event__section--destination ${isVisibleDestination ? `` : `visually-hidden`}">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
             <p class="event__destination-description">${event.description}</p>
 
@@ -180,7 +187,10 @@ export default class TripEdit extends AbstractSmartComponent {
     this._destinations = destinations;
     this._offers = offers;
     this._eventMode = eventMode;
-    this._externalData = DefaultData;
+    this._externalData = Object.assign({}, DefaultData,
+        {isVisibleOffers: eventMode === EventMode.ADDING ? false : true},
+        {isVisibleDestination: eventMode === EventMode.ADDING ? false : true}
+    );
 
     this._submitHandler = null;
     this._flatpickr = [];
@@ -216,12 +226,15 @@ export default class TripEdit extends AbstractSmartComponent {
   }
 
   removeElement() {
+    this.removeFlatpickr();
+    super.removeElement();
+  }
+
+  removeFlatpickr() {
     if (this._flatpickr) {
       this._flatpickr.forEach((it) => it.destroy());
       this._flatpickr = [];
     }
-
-    super.removeElement();
   }
 
   rerender() {
@@ -243,7 +256,6 @@ export default class TripEdit extends AbstractSmartComponent {
     const [eventStartDateElement, eventEndDateElement] = this.getElement().querySelectorAll(`.event__input--time`);
 
     const setFlatpickr = (elem, startDate) => {
-
       return flatpickr(elem, {
         dateFormat: `d/m/y H:i`,
         allowInput: true,
@@ -278,6 +290,13 @@ export default class TripEdit extends AbstractSmartComponent {
           return;
         }
 
+        if (this._eventMode === EventMode.ADDING) {
+          this.setData({
+            isVisibleOffers: true,
+            isVisibleDestination: this._externalData.isVisibleDestination,
+          }, this._event);
+        }
+
         const eventType = EVENT_TYPE.find((it) => it.name === evt.target.value);
 
         this._event = Object.assign({}, this._event,
@@ -291,16 +310,55 @@ export default class TripEdit extends AbstractSmartComponent {
     const eventDestinationElement = element.querySelector(`.event__input--destination`);
     eventDestinationElement.addEventListener(`change`, (evt) => {
       const city = evt.target.value;
-      const [{description, pictures}] = this._destinations
-        .filter((it) => it.name === city);
+
+      const destination = this._destinations.find((it) => it.name === city);
+
+      if (this._eventMode === EventMode.ADDING) {
+        this.setData({
+          isVisibleOffers: this._externalData.isVisibleOffers,
+          isVisibleDestination: true
+        }, this._event);
+      }
+
+      if (!destination) {
+        evt.target.setCustomValidity(`Select destination from the list`);
+        return;
+      } else {
+        evt.target.setCustomValidity(``);
+      }
 
       this._event = Object.assign({}, this._event,
-          {city},
-          {description},
-          {photo: pictures}
+          {city: destination.name},
+          {description: destination.description},
+          {photo: destination.pictures}
       );
 
       this.rerender();
+    });
+
+    const eventPriceElement = element.querySelector(`.event__input--price`);
+    eventPriceElement.addEventListener(`change`, (evt) => {
+      const key = +evt.target.value;
+
+      const regexp = /^[ 0-9]+$/;
+
+      if (!regexp.test(key)) {
+        evt.target.setCustomValidity(`Enter an integer`);
+      } else {
+        evt.target.setCustomValidity(``);
+      }
+    });
+
+    const eventDateElement = element.querySelectorAll(`.event__input--time`);
+
+    eventDateElement.forEach((it) => {
+      it.addEventListener(`change`, (evt) => {
+        if (eventDateElement[0].value > eventDateElement[1].value) {
+          evt.target.setCustomValidity(`Start date is greater than end date`);
+        } else {
+          evt.target.setCustomValidity(``);
+        }
+      });
     });
   }
 }

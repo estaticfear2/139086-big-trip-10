@@ -1,7 +1,7 @@
 import Trip from '../components/trip.js';
 import TripEdit from '../components/trip-edit.js';
 import {render, RenderPosition, replace, remove} from '../utils/render.js';
-import {EVENT_TYPE} from '../mock/trip-event.js';
+import {EVENT_TYPE} from '../const.js';
 import moment from 'moment';
 import EventModel from '../models/event.js';
 

@@ -1,10 +1,13 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import debounce from 'lodash/debounce';
 
 import AbstractSmartComponent from './abstract-smart-component.js';
 import {formatDate, formatTime} from '../utils/common.js';
-import {EVENT_TYPE} from '../mock/trip-event.js';
+import {EVENT_TYPE} from '../const.js';
 import {EventMode} from '../controllers/point-controller.js';
+
+const DEBOUNCE_TIMEOUT = 500;
 
 const DefaultData = {
   deleteButtonText: `Delete`,
@@ -210,7 +213,7 @@ export default class TripEdit extends AbstractSmartComponent {
   }
 
   setFavoriteButtonClickHandler(handler) {
-    this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`click`, handler);
+    this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`click`, debounce(handler, DEBOUNCE_TIMEOUT));
   }
 
   setDeleteButtonClickHandler(handler) {

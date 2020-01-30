@@ -1,6 +1,7 @@
 import AbstractComponent from './abstract-component.js';
 import {formatTime} from '../utils/common.js';
 import moment from 'moment';
+import {VISIBLE_OFFERS_COUNT} from '../const.js';
 
 const createOffersMarkup = (offers) => {
   const offersMarkup = offers
@@ -10,10 +11,9 @@ const createOffersMarkup = (offers) => {
                 &plus;
                 &euro;&nbsp;<span class="event__offer-price">${it.price}</span>
               </li>`;
-    })
-    .join(`\n`);
+    });
 
-  return offersMarkup;
+  return offersMarkup.slice(0, VISIBLE_OFFERS_COUNT).join(`\n`);
 };
 
 const getEventDuration = (eventStartDate, eventEndDate) => {

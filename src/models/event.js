@@ -16,6 +16,7 @@ export default class Event {
 
   toRAW() {
     return {
+      'id': `${this.id}`,
       'base_price': this.price,
       'date_from': this.startDate,
       'date_to': this.endDate,

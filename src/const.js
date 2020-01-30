@@ -19,7 +19,9 @@ export const EVENT_TYPE = [
   {name: `transport`, group: `Transfer`, description: `Transport to`},
   {name: `drive`, group: `Transfer`, description: `Drive to`},
   {name: `flight`, group: `Transfer`, description: `Flight to`},
-  {name: `check-in`, group: `Activity`, description: `Check into hotel`},
-  {name: `sightseeing`, group: `Activity`, description: `Natural History Museum`},
-  {name: `restaurant`, group: `Activity`, description: `Restaurant`}
+  {name: `check-in`, group: `Activity`, description: `Check into hotel in`},
+  {name: `sightseeing`, group: `Activity`, description: `Natural History Museum in`},
+  {name: `restaurant`, group: `Activity`, description: `Restaurant in`}
 ];
+
+export const VISIBLE_OFFERS_COUNT = 3;

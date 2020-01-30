@@ -26,4 +26,8 @@ const getSetFromArray = (arr) => {
   return Array.from(new Set(arr));
 };
 
-export {getRandomArrayItem, getRandomNumber, getRandomIntegerNumber, formatDate, formatTime, getSetFromArray};
+const getRandomString = (length) => {
+  return [...Array(length)].map(() => Math.random().toString(36)[3]).join(``);
+};
+
+export {getRandomArrayItem, getRandomNumber, getRandomIntegerNumber, formatDate, formatTime, getSetFromArray, getRandomString};

@@ -8,6 +8,8 @@ import {getSetFromArray} from '../utils/common.js';
 import EventController, {EventMode, getEmptyEvent} from './point-controller.js';
 import {HIDDEN_CLASS} from '../const.js';
 
+import nanoid from 'nanoid';
+
 const renderEventsByDate = (container, events, destinations, offers, onDataChange, onViewChange) => {
   const dayList = getSetFromArray(events.map((it) => new Date(it.startDate).toDateString()));
 
@@ -60,6 +62,9 @@ export default class TripController {
     this._tripInfoMain = null;
     this._tripAmount = null;
 
+    this._offers = null;
+    this._destinations = null;
+
     this._tripInfoElement = null;
     this._creatingEvent = null;
 
@@ -70,60 +75,6 @@ export default class TripController {
 
     this._eventsFilter.setSortTypeChangeHandler(this._onSortTypeChange);
     this._eventsModel.setFilterChangeHandler(this._onFilterChange);
-  }
-
-  hide() {
-    this._container.classList.add(HIDDEN_CLASS);
-  }
-
-  show() {
-    this._container.classList.remove(HIDDEN_CLASS);
-  }
-
-  render() {
-    const container = this._container;
-    const events = this._eventsModel.getEvents();
-
-    if (!events.length) {
-      render(container, this._noEvents, RenderPosition.BEFOREEND);
-      return;
-    }
-
-    render(container.firstElementChild, this._eventsFilter, RenderPosition.AFTEREND);
-
-    const eventControllers = renderEventsByDate(container, events, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), this._onDataChange, this._onViewChange);
-    this._eventControllers = this._eventControllers.concat(eventControllers);
-  }
-
-  _onSortTypeChange(sortType) {
-    let sortedEvents = [];
-    const events = this._eventsModel.getEvents();
-
-    switch (sortType) {
-      case SortType.DEFAULT:
-        sortedEvents = events.slice();
-        break;
-      case SortType.TIME:
-        sortedEvents = events.slice().sort((a, b) => {
-          const durationFirst = a.endDate - a.startDate;
-          const durationSecond = b.endDate - b.startDate;
-
-          return durationSecond - durationFirst;
-        });
-        break;
-      case SortType.PRICE:
-        sortedEvents = events.slice().sort((a, b) => b.price - a.price);
-        break;
-    }
-
-    this._removeEvents();
-
-    if (sortType === SortType.DEFAULT) {
-      this._renderEvents(sortedEvents);
-    } else {
-      const eventListElement = this._container.lastElementChild;
-      renderEvents(eventListElement, sortedEvents, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), this._onDataChange, this._onViewChange);
-    }
   }
 
   createEvent() {
@@ -138,27 +89,71 @@ export default class TripController {
     }
 
     const eventListElement = this._container;
+
     this._creatingEvent = new EventController(eventListElement, this._onDataChange, this._onViewChange);
-    const newEventId = this._eventsModel._events.length;
-    this._creatingEvent.render(getEmptyEvent(newEventId), this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.ADDING);
+    const newEventId = nanoid();
+    this._creatingEvent.render(getEmptyEvent(newEventId), this._destinations, this._offers, EventMode.ADDING);
+  }
+
+  init() {
+    this._offers = this._offersModel.getOffers();
+    this._destinations = this._destinationsModel.getDestinations();
+  }
+
+  render() {
+    const container = this._container;
+    const events = this._eventsModel.getEvents();
+
+    if (!events.length) {
+      render(container, this._noEvents, RenderPosition.BEFOREEND);
+      return;
+    }
+
+    render(container.firstElementChild, this._eventsFilter, RenderPosition.AFTEREND);
+
+    const eventControllers = renderEventsByDate(container, events, this._destinations, this._offers, this._onDataChange, this._onViewChange);
+    this._eventControllers = this._eventControllers.concat(eventControllers);
+  }
+
+  renderTripInfo(container) {
+    if (container) {
+      this._tripInfoElement = container;
+    }
+
+    if (this._tripInfoMain) {
+      remove(this._tripInfoMain);
+      remove(this._tripAmount);
+    }
+
+    this._tripInfoMain = new TripInfoMain(this._eventsModel.getEvents());
+    this._tripAmount = new Amount(this._eventsModel.getEvents());
+
+    render(this._tripInfoElement, this._tripInfoMain, RenderPosition.AFTERBEGIN);
+    render(this._tripInfoElement, this._tripAmount, RenderPosition.BEFOREEND);
+  }
+
+  rerender() {
+    this._updateEvents();
+  }
+
+  hide() {
+    this._container.classList.add(HIDDEN_CLASS);
+  }
+
+  show() {
+    this._container.classList.remove(HIDDEN_CLASS);
   }
 
   _removeEvents() {
     const eventListElement = this._container.lastElementChild;
-    eventListElement.innerHTML = ``;
+    eventListElement.remove();
 
     this._eventControllers.forEach((it) => it.removeFlatpickr());
     this._eventControllers = [];
   }
 
-  _updateEvents() {
-    this._removeEvents();
-
-    this._renderEvents(this._eventsModel.getEvents());
-  }
-
   _renderEvents(events) {
-    const eventListElement = this._container.lastElementChild;
+    const eventListElement = this._container;
 
     if (!this._eventsModel.getEventsAll().length) {
       remove(this._eventsFilter);
@@ -167,8 +162,20 @@ export default class TripController {
       return;
     }
 
-    const newEvents = renderEventsByDate(eventListElement, events, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), this._onDataChange, this._onViewChange);
+    let newEvents = [];
+
+    if (this._eventsFilter.getCurrentSortType() === SortType.DEFAULT) {
+      newEvents = renderEventsByDate(eventListElement, events, this._destinations, this._offers, this._onDataChange, this._onViewChange);
+    } else {
+      newEvents = renderEvents(eventListElement, events, this._destinations, this._offers, this._onDataChange, this._onViewChange);
+    }
     this._eventControllers = this._eventControllers.concat(newEvents);
+  }
+
+  _updateEvents() {
+    this._removeEvents();
+
+    this._renderEvents(this._eventsModel.getSortedEvents(this._eventsFilter.getCurrentSortType()));
   }
 
   _onDataChange(eventController, oldData, newData) {
@@ -183,13 +190,13 @@ export default class TripController {
         this._api.createEvent(newData)
           .then((eventModel) => {
             this._eventsModel.addEvent(eventModel);
-            eventController.render(eventModel, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.DEFAULT);
+            eventController.render(eventModel, this._destinations, this._offers, EventMode.DEFAULT);
 
             const destroyedEvent = this._eventControllers.pop();
             destroyedEvent.destroy();
 
             this._eventControllers = [].concat(eventController, this._eventControllers);
-            this._onSortTypeChange(SortType.DEFAULT);
+            this._updateEvents();
             this.renderTripInfo();
           })
           .catch(() => {
@@ -213,7 +220,7 @@ export default class TripController {
           const isSuccess = this._eventsModel.updateEvent(oldData.id, eventModel);
 
           if (isSuccess) {
-            eventController.render(eventModel, this._destinationsModel.getDestinations(), this._offersModel.getOffers(), EventMode.DEFAULT);
+            eventController.render(eventModel, this._destinations, this._offers, EventMode.DEFAULT);
             this._updateEvents();
             this.renderTripInfo();
           }
@@ -224,32 +231,18 @@ export default class TripController {
     }
   }
 
-  renderTripInfo(container) {
-    if (container) {
-      this._tripInfoElement = container;
-    }
-
-    if (this._tripInfoMain) {
-      remove(this._tripInfoMain);
-      remove(this._tripAmount);
-    }
-
-    this._tripInfoMain = new TripInfoMain(this._eventsModel.getEvents());
-    this._tripAmount = new Amount(this._eventsModel.getEvents());
-
-    render(this._tripInfoElement, this._tripInfoMain, RenderPosition.AFTERBEGIN);
-    render(this._tripInfoElement, this._tripAmount, RenderPosition.BEFOREEND);
-  }
-
-  _onViewChange() {
-    this._eventControllers.forEach((it) => it.setDefaultView());
-  }
-
   _onFilterChange() {
     this._updateEvents();
   }
 
-  rerender() {
-    this._updateEvents();
+  _onSortTypeChange(sortType) {
+    const sortedEvents = this._eventsModel.getSortedEvents(sortType);
+
+    this._removeEvents();
+    this._renderEvents(sortedEvents);
+  }
+
+  _onViewChange() {
+    this._eventControllers.forEach((it) => it.setDefaultView());
   }
 }

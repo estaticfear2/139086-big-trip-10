@@ -57,6 +57,10 @@ export default class Sort extends AbstractComponent {
     return createEventsFilterTemplate();
   }
 
+  getCurrentSortType() {
+    return this._currentSortType;
+  }
+
   setSortTypeChangeHandler(handler) {
     this.getElement().addEventListener(`click`, (evt) => {
       const sortType = evt.target.value;

@@ -70,6 +70,12 @@ export default class EventController {
     this._onEscKeyDown = this._onEscKeyDown.bind(this);
   }
 
+  destroy() {
+    remove(this._eventComponent);
+    remove(this._eventEditComponent);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
+  }
+
   render(event, destinations, offers, mode) {
     const oldEvent = this._eventComponent;
     const oldEventEdit = this._eventEditComponent;
@@ -128,21 +134,20 @@ export default class EventController {
           remove(oldEventEdit);
         }
         document.addEventListener(`keydown`, this._onEscKeyDown);
+
         render(this._container.lastElementChild, this._eventEditComponent, RenderPosition.AFTERBEGIN);
         break;
     }
+  }
+
+  removeFlatpickr() {
+    this._eventEditComponent.removeFlatpickr();
   }
 
   setDefaultView() {
     if (this._eventMode !== EventMode.DEFAULT) {
       this._replaceEventEditComponent();
     }
-  }
-
-  destroy() {
-    remove(this._eventComponent);
-    remove(this._eventEditComponent);
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
   shake() {
@@ -189,9 +194,5 @@ export default class EventController {
     }
 
     this._eventMode = EventMode.DEFAULT;
-  }
-
-  removeFlatpickr() {
-    this._eventEditComponent.removeFlatpickr();
   }
 }

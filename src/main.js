@@ -49,8 +49,6 @@ const statisticsComponent = new Statistics(eventsModel);
 render(tripEventsElement, statisticsComponent, RenderPosition.AFTEREND);
 statisticsComponent.hide();
 
-const tripInfoElement = siteMainElement.querySelector(`.trip-info`);
-
 siteMenuComponent.setOnChange((menuItem) => {
   siteMenuComponent.setActiveItem(menuItem);
 
@@ -66,15 +64,16 @@ siteMenuComponent.setOnChange((menuItem) => {
   }
 });
 
+const tripInfoElement = siteMainElement.querySelector(`.trip-info`);
+
 Promise.all([apiWithProvider.getEvents(), apiWithProvider.getDestinations(), apiWithProvider.getOffers()])
   .then(([events, destinations, offers]) => {
-
     remove(loadingComponent);
 
     destinationsModel.setDestinations(destinations);
     offersModel.setOffers(offers);
     eventsModel.setEvents(events);
-
+    tripController.init();
     tripController.render();
     tripController.renderTripInfo(tripInfoElement);
   });

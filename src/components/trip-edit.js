@@ -1,10 +1,14 @@
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import debounce from 'lodash/debounce';
+import moment from 'moment';
 
 import AbstractSmartComponent from './abstract-smart-component.js';
 import {formatDate, formatTime} from '../utils/common.js';
-import {EVENT_TYPE} from '../mock/trip-event.js';
+import {EVENT_TYPE} from '../const.js';
 import {EventMode} from '../controllers/point-controller.js';
+
+const DEBOUNCE_TIMEOUT = 500;
 
 const DefaultData = {
   deleteButtonText: `Delete`,
@@ -14,8 +18,8 @@ const DefaultData = {
   isVisibleDestination: true
 };
 
-const createEventPhotoMarkup = (list) => {
-  return list.map((it) => `<img class="event__photo" src="${it.src}" alt="${it.description}">`).join(`\n`);
+const createEventPhotoMarkup = (pictures) => {
+  return pictures.map((it) => `<img class="event__photo" src="${it.src}" alt="${it.description}">`).join(`\n`);
 };
 
 const createEventTypeMarkup = (eventType, eventID, eventGroup) => {
@@ -204,19 +208,10 @@ export default class TripEdit extends AbstractSmartComponent {
     return createTripEditTemplate(this._event, this._destinations, this._offers, this._eventMode, this._externalData);
   }
 
-  setEditFormSubmitHandler(handler) {
-    this.getElement().addEventListener(`submit`, handler);
-    this._submitHandler = handler;
-  }
+  getData() {
+    const formElement = this.getElement();
 
-  setFavoriteButtonClickHandler(handler) {
-    this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`click`, handler);
-  }
-
-  setDeleteButtonClickHandler(handler) {
-    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, handler);
-
-    this._deleteButtonClickHandler = handler;
+    return new FormData(formElement);
   }
 
   recoveryListeners() {
@@ -247,6 +242,27 @@ export default class TripEdit extends AbstractSmartComponent {
     this.rerender();
   }
 
+  setData(data, event) {
+    this._event = event;
+    this._externalData = Object.assign({}, DefaultData, data);
+    this.rerender();
+  }
+
+  setEditFormSubmitHandler(handler) {
+    this.getElement().addEventListener(`submit`, handler);
+    this._submitHandler = handler;
+  }
+
+  setFavoriteButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`click`, debounce(handler, DEBOUNCE_TIMEOUT));
+  }
+
+  setDeleteButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, handler);
+
+    this._deleteButtonClickHandler = handler;
+  }
+
   _applyFlatpickr() {
     if (this._flatpickr) {
       this._flatpickr.forEach((it) => it.destroy());
@@ -265,18 +281,6 @@ export default class TripEdit extends AbstractSmartComponent {
 
     this._flatpickr.push(setFlatpickr(eventStartDateElement, this._event.startDate));
     this._flatpickr.push(setFlatpickr(eventEndDateElement, this._event.endDate));
-  }
-
-  getData() {
-    const formElement = this.getElement();
-
-    return new FormData(formElement);
-  }
-
-  setData(data, event) {
-    this._event = event;
-    this._externalData = Object.assign({}, DefaultData, data);
-    this.rerender();
   }
 
   _subscribeOnEvents() {
@@ -353,7 +357,10 @@ export default class TripEdit extends AbstractSmartComponent {
 
     eventDateElement.forEach((it) => {
       it.addEventListener(`change`, (evt) => {
-        if (eventDateElement[0].value > eventDateElement[1].value) {
+        const startDate = moment(eventDateElement[0].value, `DD/MM/YY HH:mm`);
+        const endDate = moment(eventDateElement[1].value, `DD/MM/YY HH:mm`);
+
+        if (startDate > endDate) {
           evt.target.setCustomValidity(`Start date is greater than end date`);
         } else {
           evt.target.setCustomValidity(``);

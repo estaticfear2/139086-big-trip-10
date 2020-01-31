@@ -1,4 +1,3 @@
-//  import nanoid from 'nanoid';
 import Event from '../models/event.js';
 
 const getSyncedEvents = (items) => items
@@ -61,13 +60,10 @@ export default class Provider {
         });
     }
 
-    //    const fakeNewEventId = nanoid();
-    const fakeNewEvent = Event.parseEvent(Object.assign({}, event.toRAW(), {id: event.id}));
-
     this._isSynchronized = false;
-    this._store.setItem(fakeNewEvent.id, Object.assign({}, fakeNewEvent.toRAW(), {offline: true}));
+    this._store.setItem(event.id, Object.assign({}, event.toRAW(), {offline: true}));
 
-    return Promise.resolve(fakeNewEvent);
+    return Promise.resolve(event);
   }
 
   updateEvent(id, event) {
@@ -79,12 +75,10 @@ export default class Provider {
         });
     }
 
-    const fakeUpdatedEvent = Event.parseEvent(Object.assign({}, event.toRAW(), {id}));
-
     this._isSynchronized = false;
-    this._store.setItem(id, Object.assign({}, fakeUpdatedEvent.toRAW(), {offline: true}));
+    this._store.setItem(id, Object.assign({}, event.toRAW(), {offline: true}));
 
-    return Promise.resolve(fakeUpdatedEvent);
+    return Promise.resolve(event);
   }
 
   deleteEvent(id) {

@@ -106,7 +106,8 @@ export default class Provider {
           });
 
           const createdEvents = response.created.map((event) => {
-            event.offline = false;
+            delete event.offline;
+
             return event;
           });
 

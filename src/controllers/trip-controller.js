@@ -1,26 +1,26 @@
+import nanoid from 'nanoid';
+
 import TripEventsList from '../components/trip-events-list.js';
 import NoEvents from '../components/no-events.js';
-import Sort, {SortType} from '../components/sort.js';
+import Sort from '../components/sort.js';
 import TripInfoMain from '../components/trip-info-main.js';
 import Amount from '../components/amount.js';
 import {render, RenderPosition, remove} from '../utils/render.js';
 import {getSetFromArray} from '../utils/common.js';
-import EventController, {EventMode, getEmptyEvent} from './point-controller.js';
-import {HIDDEN_CLASS} from '../const.js';
-
-import nanoid from 'nanoid';
+import EventController, {getEmptyEvent} from './point-controller.js';
+import {HIDDEN_CLASS, EventMode, SortType} from '../const.js';
 
 const renderEventsByDate = (container, events, destinations, offers, onDataChange, onViewChange) => {
-  const dayList = getSetFromArray(events.map((it) => new Date(it.startDate).toDateString()));
+  const dayList = getSetFromArray(events.map((event) => new Date(event.startDate).toDateString()));
 
   render(container, new TripEventsList(dayList), RenderPosition.BEFOREEND);
   const controllers = [];
 
-  Array.from(dayList).map((date, i) => {
-    const tripEventsDayElement = container.querySelectorAll(`.trip-days__item`)[i].querySelector(`.trip-events__list`);
+  Array.from(dayList).map((date, index) => {
+    const tripEventsDayElement = container.querySelectorAll(`.trip-days__item`)[index].querySelector(`.trip-events__list`);
 
     events
-      .filter((it) => new Date(it.startDate).toDateString() === date)
+      .filter((event) => new Date(event.startDate).toDateString() === date)
       .forEach((event) => {
         const eventController = new EventController(tripEventsDayElement, onDataChange, onViewChange);
         eventController.render(event, destinations, offers, EventMode.DEFAULT);
@@ -47,7 +47,7 @@ const renderEvents = (container, events, destinations, offers, onDataChange, onV
   return controllers;
 };
 
-export default class TripController {
+class TripController {
   constructor(container, eventsModel, destinationsModel, offersModel, api) {
     this._container = container;
     this._eventsModel = eventsModel;
@@ -125,8 +125,8 @@ export default class TripController {
       remove(this._tripAmount);
     }
 
-    this._tripInfoMain = new TripInfoMain(this._eventsModel.getEvents());
-    this._tripAmount = new Amount(this._eventsModel.getEvents());
+    this._tripInfoMain = new TripInfoMain(this._eventsModel.getEventsAll());
+    this._tripAmount = new Amount(this._eventsModel.getEventsAll());
 
     render(this._tripInfoElement, this._tripInfoMain, RenderPosition.AFTERBEGIN);
     render(this._tripInfoElement, this._tripAmount, RenderPosition.BEFOREEND);
@@ -148,7 +148,7 @@ export default class TripController {
     const eventListElement = this._container.lastElementChild;
     eventListElement.remove();
 
-    this._eventControllers.forEach((it) => it.removeFlatpickr());
+    this._eventControllers.forEach((eventController) => eventController.removeFlatpickr());
     this._eventControllers = [];
   }
 
@@ -243,6 +243,13 @@ export default class TripController {
   }
 
   _onViewChange() {
-    this._eventControllers.forEach((it) => it.setDefaultView());
+    if (this._creatingEvent) {
+      this._creatingEvent.destroy();
+      this._creatingEvent = null;
+    }
+
+    this._eventControllers.forEach((eventController) => eventController.setDefaultView());
   }
 }
+
+export default TripController;

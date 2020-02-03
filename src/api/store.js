@@ -4,7 +4,7 @@ const StoreKey = {
   OFFERS: `offers`
 };
 
-export default class Store {
+class Store {
   constructor(storage) {
     this._storage = storage;
     this._storeKey = StoreKey;
@@ -72,3 +72,5 @@ export default class Store {
     }
   }
 }
+
+export default Store;

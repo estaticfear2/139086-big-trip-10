@@ -1,8 +1,9 @@
 import MainFilter from '../components/main-filter.js';
 import {FilterType} from '../const.js';
 import {render, replace, RenderPosition} from '../utils/render.js';
+import {getEventsByFilter} from '../utils/filter.js';
 
-export default class FilterController {
+class FilterController {
   constructor(container, eventsModel) {
     this._container = container;
     this._eventsModel = eventsModel;
@@ -20,9 +21,12 @@ export default class FilterController {
     const container = this._container;
 
     const filters = Object.values(FilterType).map((filterType) => {
+      const isAvailableFilter = getEventsByFilter(this._eventsModel.getEventsAll(), filterType).length > 0;
+
       return {
         name: filterType,
-        checked: filterType === this._activeFilterType
+        checked: filterType === this._activeFilterType,
+        isAvailable: isAvailableFilter
       };
     });
 
@@ -47,3 +51,5 @@ export default class FilterController {
     this._activeFilterType = filterType;
   }
 }
+
+export default FilterController;

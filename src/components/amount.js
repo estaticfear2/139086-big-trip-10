@@ -3,10 +3,10 @@ import AbstractComponent from './abstract-component.js';
 const createAmountMarkup = (eventsList) => {
   const calculateAmount = () => {
     return !eventsList.length ? 0 :
-      eventsList.reduce((amount, item) => {
-        const offersAmount = item.offers.reduce((sum, offer) => sum + offer.price, 0);
+      eventsList.reduce((amount, event) => {
+        const offersAmount = event.offers.reduce((sum, offer) => sum + offer.price, 0);
 
-        return amount + item.price + offersAmount;
+        return amount + event.price + offersAmount;
       }, 0);
   };
 
@@ -21,7 +21,7 @@ const createAmountTemplate = (eventsList) => {
   return createAmountMarkup(eventsList);
 };
 
-export default class Amount extends AbstractComponent {
+class Amount extends AbstractComponent {
   constructor(eventsList) {
     super();
     this._eventsList = eventsList;
@@ -31,3 +31,5 @@ export default class Amount extends AbstractComponent {
     return createAmountTemplate(this._eventsList);
   }
 }
+
+export default Amount;

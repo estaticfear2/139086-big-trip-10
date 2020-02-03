@@ -5,11 +5,11 @@ import {VISIBLE_OFFERS_COUNT} from '../const.js';
 
 const createOffersMarkup = (offers) => {
   const offersMarkup = offers
-    .map((it) => {
+    .map((offer) => {
       return `<li class="event__offer">
-                <span class="event__offer-title">${it.title}</span>
+                <span class="event__offer-title">${offer.title}</span>
                 &plus;
-                &euro;&nbsp;<span class="event__offer-price">${it.price}</span>
+                &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
               </li>`;
     });
 
@@ -82,7 +82,7 @@ const createTripTemplate = (event) => {
   );
 };
 
-export default class TripTemplate extends AbstractComponent {
+class TripTemplate extends AbstractComponent {
   constructor(event) {
     super();
     this._event = event;
@@ -96,3 +96,5 @@ export default class TripTemplate extends AbstractComponent {
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, handler);
   }
 }
+
+export default TripTemplate;

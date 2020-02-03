@@ -1,19 +1,21 @@
-import {SortType} from '../components/sort.js';
+import {SortType} from '../const.js';
 
-export const getSortedEvents = (events, sortType) => {
+const getSortedEvents = (events, sortType) => {
   switch (sortType) {
     case SortType.DEFAULT:
       return events.slice();
     case SortType.TIME:
-      return events.slice().sort((a, b) => {
-        const durationFirst = a.endDate - a.startDate;
-        const durationSecond = b.endDate - b.startDate;
+      return events.slice().sort((firstEvent, secondEvent) => {
+        const durationFirst = firstEvent.endDate - firstEvent.startDate;
+        const durationSecond = secondEvent.endDate - secondEvent.startDate;
 
         return durationSecond - durationFirst;
       });
     case SortType.PRICE:
-      return events.slice().sort((a, b) => b.price - a.price);
+      return events.slice().sort((firstEvent, secondEvent) => secondEvent.price - firstEvent.price);
   }
 
   return events;
 };
+
+export {getSortedEvents};

@@ -15,7 +15,7 @@ const checkStatus = (response) => {
   }
 };
 
-export default class Api {
+class Api {
   constructor(endPoint, authorization) {
     this._endPoint = endPoint;
     this._authorization = authorization;
@@ -48,11 +48,11 @@ export default class Api {
       .then(Event.parseEvent);
   }
 
-  updateEvent(id, data) {
+  updateEvent(id, event) {
     return this._load({
       url: `points/${id}`,
       method: Method.PUT,
-      body: JSON.stringify(data.toRAW()),
+      body: JSON.stringify(event.toRAW()),
       headers: new Headers({'Content-type': `application/json`})
     })
       .then((response) => response.json())
@@ -63,11 +63,11 @@ export default class Api {
     return this._load({url: `points/${id}`, method: Method.DELETE});
   }
 
-  sync(data) {
+  sync(events) {
     return this._load({
       url: `points/sync`,
       method: Method.POST,
-      body: JSON.stringify(data),
+      body: JSON.stringify(events),
       headers: new Headers({'Content-Type': `application/json`})
     })
       .then((response) => response.json());
@@ -83,3 +83,5 @@ export default class Api {
       });
   }
 }
+
+export default Api;

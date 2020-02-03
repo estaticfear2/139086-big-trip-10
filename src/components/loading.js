@@ -10,8 +10,10 @@ const createLoadingTemplate = () => {
   return createLoadingMarkup();
 };
 
-export default class NoEvents extends AbstractComponent {
+class NoEvents extends AbstractComponent {
   getTemplate() {
     return createLoadingTemplate();
   }
 }
+
+export default NoEvents;

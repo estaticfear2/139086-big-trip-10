@@ -1,7 +1,7 @@
 import {createElement} from '../utils/render.js';
 import {HIDDEN_CLASS} from '../const.js';
 
-export default class AbstractComponent {
+class AbstractComponent {
   constructor() {
     if (new.target === AbstractComponent) {
       throw new Error(`Can't instantiate AbstractComponent, only concrete one.`);
@@ -38,3 +38,5 @@ export default class AbstractComponent {
     }
   }
 }
+
+export default AbstractComponent;

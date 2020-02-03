@@ -5,8 +5,7 @@ import moment from 'moment';
 
 import AbstractSmartComponent from './abstract-smart-component.js';
 import {formatDate, formatTime} from '../utils/common.js';
-import {EVENT_TYPE} from '../const.js';
-import {EventMode} from '../controllers/point-controller.js';
+import {EVENT_TYPE, EventMode} from '../const.js';
 
 const DEBOUNCE_TIMEOUT = 500;
 
@@ -19,19 +18,19 @@ const DefaultData = {
 };
 
 const createEventPhotoMarkup = (pictures) => {
-  return pictures.map((it) => `<img class="event__photo" src="${it.src}" alt="${it.description}">`).join(`\n`);
+  return pictures.map((picture) => `<img class="event__photo" src="${picture.src}" alt="${picture.description}">`).join(`\n`);
 };
 
-const createEventTypeMarkup = (eventType, eventID, eventGroup) => {
+const createEventTypeMarkup = (eventTypeName, eventID, eventGroup) => {
   const markup = EVENT_TYPE.slice()
-    .filter((it) => it.group === eventGroup)
-    .map((it) => {
-      const type = it.name === eventType ? `checked` : ``;
+    .filter((eventType) => eventType.group === eventGroup)
+    .map((eventType) => {
+      const type = eventType.name === eventTypeName ? `checked` : ``;
 
       return (
         `<div class="event__type-item">
-            <input id="event-type-${it.name}-${eventID}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${it.name}" ${type}>
-            <label class="event__type-label  event__type-label--${it.name}" for="event-type-${it.name}-${eventID}">${it.name}</label>
+            <input id="event-type-${eventType.name}-${eventID}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${eventType.name}" ${type}>
+            <label class="event__type-label  event__type-label--${eventType.name}" for="event-type-${eventType.name}-${eventID}">${eventType.name}</label>
           </div>`
       );
     }).join(`\n`);
@@ -59,26 +58,47 @@ const createEventTypeListMarkup = (event) => {
 };
 
 const createEventDestinationsMarkup = (destinations) => {
-  return destinations.map((it) => {
+  return destinations.map((destination) => {
     return (
-      `<option value="${it.name}"></option>`
+      `<option value="${destination.name}"></option>`
     );
   }).join(`/n`);
 };
 
-const createEventOffersMarkup = (offers, event) => {
-  const eventOffers = offers.find((it) => it.type === event.type.name).offers;
+const createFavoriteButtonMarkup = (eventId, isFavorite, disabledElement) => {
+  return (
+    `<input id="event-favorite-${eventId}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${isFavorite ? `checked` : ``} ${disabledElement}>
+      <label class="event__favorite-btn" for="event-favorite-${eventId}">
+        <span class="visually-hidden">Add to favorite</span>
+        <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
+          <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
+        </svg>
+      </label>`
+  );
+};
 
-  return eventOffers.map((it, i) => {
-    const isOfferChecked = event.offers.find((offer) => offer.title === it.title);
+const createRollupButtonMarkup = () => {
+  return (
+    `<button class="event__rollup-btn" type="button">
+        <span class="visually-hidden">Open event</span>
+      </button>`
+  );
+};
+
+
+const createEventOffersMarkup = (offers, event) => {
+  const eventOffers = offers.find((offer) => offer.type === event.type.name).offers;
+
+  return eventOffers.map((eventOffer, index) => {
+    const isOfferChecked = event.offers.find((offer) => offer.title === eventOffer.title);
 
     return (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${i}-${event.id}" type="checkbox" name="event-offer-${i}" ${isOfferChecked ? `checked` : ``}>
-        <label class="event__offer-label" for="event-offer-${i}-${event.id}">
-          <span class="event__offer-title">${it.title}</span>
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${index}-${event.id}" type="checkbox" name="event-offer-${index}" ${isOfferChecked ? `checked` : ``}>
+        <label class="event__offer-label" for="event-offer-${index}-${event.id}">
+          <span class="event__offer-title">${eventOffer.title}</span>
           &plus;
-          &euro;&nbsp;<span class="event__offer-price">${it.price}</span>
+          &euro;&nbsp;<span class="event__offer-price">${eventOffer.price}</span>
         </label>
       </div>`
     );
@@ -91,8 +111,9 @@ const createTripEditMarkup = (event, destinations, offers, mode, externalData) =
   const isVisibleOffers = externalData.isVisibleOffers;
   const isVisibleDestination = externalData.isVisibleDestination;
   const eventOffersMarkup = createEventOffersMarkup(offers, event);
-
   const disabledElement = externalData.isBlocked ? `disabled` : ``;
+  const favoriteButtonMarkup = mode === EventMode.ADDING ? `` : createFavoriteButtonMarkup(event.id, event.isFavorite, disabledElement);
+  const rollupButtonMarkup = mode === EventMode.ADDING ? `` : createRollupButtonMarkup();
 
   return (
     `<form class="${mode === EventMode.ADDING ? `trip-events__item ` : ``} event  event--edit" action="#" method="post">
@@ -142,17 +163,9 @@ const createTripEditMarkup = (event, destinations, offers, mode, externalData) =
           <button class="event__save-btn  btn  btn--blue" type="submit" ${disabledElement}>${saveButtonText}</button>
           <button class="event__reset-btn" type="reset" ${disabledElement}>${deleteButtonText}</button>
 
-          <input id="event-favorite-${event.id}" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${event.isFavorite ? `checked` : ``} ${disabledElement}>
-          <label class="event__favorite-btn" for="event-favorite-${event.id}">
-            <span class="visually-hidden">Add to favorite</span>
-            <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
-              <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
-            </svg>
-          </label>
+          ${favoriteButtonMarkup}
 
-          <button class="event__rollup-btn" type="button">
-            <span class="visually-hidden">Open event</span>
-          </button>
+          ${rollupButtonMarkup}
         </header>
 
         <section class="event__details ${isVisibleOffers || isVisibleDestination ? `` : `visually-hidden`}">
@@ -184,10 +197,11 @@ const createTripEditTemplate = (event, destinations, offers, mode, externalData)
   return createTripEditMarkup(event, destinations, offers, mode, externalData);
 };
 
-export default class TripEdit extends AbstractSmartComponent {
+class TripEdit extends AbstractSmartComponent {
   constructor(event, destinations, offers, eventMode) {
     super();
     this._event = event;
+    this._resetEvent = Object.assign({}, event);
     this._destinations = destinations;
     this._offers = offers;
     this._eventMode = eventMode;
@@ -199,6 +213,7 @@ export default class TripEdit extends AbstractSmartComponent {
     this._submitHandler = null;
     this._flatpickr = [];
     this._deleteButtonClickHandler = null;
+    this._favoriteButtonClickHandler = null;
 
     this._applyFlatpickr();
     this._subscribeOnEvents();
@@ -216,8 +231,9 @@ export default class TripEdit extends AbstractSmartComponent {
 
   recoveryListeners() {
     this.setEditFormSubmitHandler(this._submitHandler);
-    this._subscribeOnEvents();
     this.setDeleteButtonClickHandler(this._deleteButtonClickHandler);
+    this.setFavoriteButtonClickHandler(this._favoriteButtonClickHandler);
+    this._subscribeOnEvents();
   }
 
   removeElement() {
@@ -227,7 +243,7 @@ export default class TripEdit extends AbstractSmartComponent {
 
   removeFlatpickr() {
     if (this._flatpickr) {
-      this._flatpickr.forEach((it) => it.destroy());
+      this._flatpickr.forEach((flatpickrController) => flatpickrController.destroy());
       this._flatpickr = [];
     }
   }
@@ -235,16 +251,20 @@ export default class TripEdit extends AbstractSmartComponent {
   rerender() {
     super.rerender();
     this._applyFlatpickr();
+    this._subscribeOnEvents();
   }
 
   reset() {
-    this._event = Object.assign({}, this._event);
+    this._event = Object.assign({}, this._resetEvent);
     this.rerender();
   }
 
-  setData(data, event) {
-    this._event = event;
-    this._externalData = Object.assign({}, DefaultData, data);
+  setData(externalData, event) {
+    if (event) {
+      this._event = event;
+    }
+
+    this._externalData = Object.assign({}, DefaultData, externalData);
     this.rerender();
   }
 
@@ -254,7 +274,10 @@ export default class TripEdit extends AbstractSmartComponent {
   }
 
   setFavoriteButtonClickHandler(handler) {
-    this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`click`, debounce(handler, DEBOUNCE_TIMEOUT));
+    if (this._eventMode !== EventMode.ADDING) {
+      this.getElement().querySelector(`.event__favorite-checkbox`).addEventListener(`click`, debounce(handler, DEBOUNCE_TIMEOUT));
+      this._favoriteButtonClickHandler = handler;
+    }
   }
 
   setDeleteButtonClickHandler(handler) {
@@ -264,18 +287,15 @@ export default class TripEdit extends AbstractSmartComponent {
   }
 
   _applyFlatpickr() {
-    if (this._flatpickr) {
-      this._flatpickr.forEach((it) => it.destroy());
-      this._flatpickr = [];
-    }
+    this.removeFlatpickr();
 
     const [eventStartDateElement, eventEndDateElement] = this.getElement().querySelectorAll(`.event__input--time`);
 
-    const setFlatpickr = (elem, startDate) => {
-      return flatpickr(elem, {
+    const setFlatpickr = (inputElement, date) => {
+      return flatpickr(inputElement, {
         dateFormat: `d/m/y H:i`,
         allowInput: true,
-        defaultDate: startDate
+        defaultDate: date
       });
     };
 
@@ -298,13 +318,13 @@ export default class TripEdit extends AbstractSmartComponent {
           this.setData({
             isVisibleOffers: true,
             isVisibleDestination: this._externalData.isVisibleDestination,
-          }, this._event);
+          });
         }
 
-        const eventType = EVENT_TYPE.find((it) => it.name === evt.target.value);
+        const type = EVENT_TYPE.find((eventType) => eventType.name === evt.target.value);
 
         this._event = Object.assign({}, this._event,
-            {type: eventType}
+            {type}
         );
 
         this.rerender();
@@ -315,57 +335,90 @@ export default class TripEdit extends AbstractSmartComponent {
     eventDestinationElement.addEventListener(`change`, (evt) => {
       const city = evt.target.value;
 
-      const destination = this._destinations.find((it) => it.name === city);
+      const selectedDestination = this._destinations.find((destination) => destination.name === city);
 
       if (this._eventMode === EventMode.ADDING) {
         this.setData({
           isVisibleOffers: this._externalData.isVisibleOffers,
           isVisibleDestination: true
-        }, this._event);
+        });
       }
 
-      if (!destination) {
+      if (!selectedDestination) {
         evt.target.setCustomValidity(`Select destination from the list`);
-        return;
+        evt.target.reportValidity();
       } else {
         evt.target.setCustomValidity(``);
+
+        this._event = Object.assign({}, this._event,
+            {city: selectedDestination.name},
+            {description: selectedDestination.description},
+            {photo: selectedDestination.pictures}
+        );
+
+        this.rerender();
       }
-
-      this._event = Object.assign({}, this._event,
-          {city: destination.name},
-          {description: destination.description},
-          {photo: destination.pictures}
-      );
-
-      this.rerender();
     });
 
     const eventPriceElement = element.querySelector(`.event__input--price`);
-    eventPriceElement.addEventListener(`change`, (evt) => {
-      const key = +evt.target.value;
+    eventPriceElement.addEventListener(`input`, (evt) => {
+      const price = evt.target.value;
 
       const regexp = /^[ 0-9]+$/;
 
-      if (!regexp.test(key)) {
+      if (!regexp.test(price)) {
         evt.target.setCustomValidity(`Enter an integer`);
+        evt.target.reportValidity();
       } else {
         evt.target.setCustomValidity(``);
+
+        this._event = Object.assign({}, this._event,
+            {price}
+        );
       }
     });
 
-    const eventDateElement = element.querySelectorAll(`.event__input--time`);
+    const eventDateElements = element.querySelectorAll(`.event__input--time`);
 
-    eventDateElement.forEach((it) => {
-      it.addEventListener(`change`, (evt) => {
-        const startDate = moment(eventDateElement[0].value, `DD/MM/YY HH:mm`);
-        const endDate = moment(eventDateElement[1].value, `DD/MM/YY HH:mm`);
+    eventDateElements.forEach((dateInput) => {
+      dateInput.addEventListener(`change`, (evt) => {
+        const startDateValue = eventDateElements[0].value;
+        const endDateValue = eventDateElements[1].value;
+        const startDate = moment(startDateValue, `DD/MM/YY HH:mm`).valueOf();
+        const endDate = moment(endDateValue, `DD/MM/YY HH:mm`).valueOf();
 
         if (startDate > endDate) {
           evt.target.setCustomValidity(`Start date is greater than end date`);
+          evt.target.reportValidity();
         } else {
           evt.target.setCustomValidity(``);
+
+          this._event = Object.assign({}, this._event,
+              {startDate},
+              {endDate}
+          );
         }
       });
     });
+
+    const offersContainer = element.querySelector(`.event__available-offers`);
+
+    if (this._externalData.isVisibleOffers && offersContainer) {
+      offersContainer.addEventListener(`input`, (evt) => {
+        if (evt.target.tagName !== `INPUT`) {
+          return;
+        }
+
+        const offersInputs = offersContainer.querySelectorAll(`.event__offer-checkbox`);
+        const availableOffers = this._offers.find((offer) => offer.type === this._event.type.name).offers;
+        const selectedOffers = availableOffers.filter((offer, index) => offersInputs[index].checked);
+
+        this._event = Object.assign({}, this._event,
+            {offers: selectedOffers}
+        );
+      });
+    }
   }
 }
+
+export default TripEdit;

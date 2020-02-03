@@ -12,7 +12,7 @@ const renderMoneyChart = (ctx, events) => {
   const amount = eventsType.map((type) => {
     return events
       .filter((event) => event.type.name === type)
-      .reduce((sum, it) => sum + +it.price, 0);
+      .reduce((sum, event) => sum + +event.price, 0);
   });
 
   return new Chart(ctx, {
@@ -148,8 +148,8 @@ const renderTimeChart = (ctx, events) => {
   const time = eventsType.map((type) => {
     return events
       .filter((event) => event.type.name === type)
-      .reduce((sum, it) => {
-        const duration = moment(it.endDate) - moment(it.startDate);
+      .reduce((sum, event) => {
+        const duration = moment(event.endDate) - moment(event.startDate);
         return sum + Math.round(moment.duration(duration).asHours());
       }, 0);
   });
@@ -231,7 +231,7 @@ const createStatisticsTemplate = () => {
   );
 };
 
-export default class Statistics extends AbstractSmartComponent {
+class Statistics extends AbstractSmartComponent {
   constructor(events) {
     super();
 
@@ -296,3 +296,5 @@ export default class Statistics extends AbstractSmartComponent {
     }
   }
 }
+
+export default Statistics;

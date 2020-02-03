@@ -10,8 +10,10 @@ const createNoEventsTemplate = () => {
   return createNoEventsMarkup();
 };
 
-export default class NoEvents extends AbstractComponent {
+class NoEvents extends AbstractComponent {
   getTemplate() {
     return createNoEventsTemplate();
   }
 }
+
+export default NoEvents;

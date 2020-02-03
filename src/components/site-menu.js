@@ -3,15 +3,15 @@ import {MenuItem} from '../const.js';
 
 const ACTIVE_ITEM_CLASS = `trip-tabs__btn--active`;
 
-const createSiteMenuMarkup = (item, isActive) => {
+const createSiteMenuMarkup = (menuItem, isActive) => {
   return (
-    `<a class="trip-tabs__btn  ${isActive ? ACTIVE_ITEM_CLASS : ``}" href="#">${item}</a>`
+    `<a class="trip-tabs__btn  ${isActive ? ACTIVE_ITEM_CLASS : ``}" href="#">${menuItem}</a>`
   );
 };
 
-export const createSiteMenuTemplate = (menuItems, activeItem) => {
+const createSiteMenuTemplate = (menuItems, activeItem) => {
   const siteMenuMarkup = Object.values(menuItems)
-    .map((it) => createSiteMenuMarkup(it, it === activeItem))
+    .map((menuItem) => createSiteMenuMarkup(menuItem, menuItem === activeItem))
     .join(`\n`);
 
   return (
@@ -21,7 +21,7 @@ export const createSiteMenuTemplate = (menuItems, activeItem) => {
   );
 };
 
-export default class SiteMenu extends AbstractComponent {
+class SiteMenu extends AbstractComponent {
   constructor() {
     super();
     this._menuItems = MenuItem;
@@ -54,3 +54,5 @@ export default class SiteMenu extends AbstractComponent {
     });
   }
 }
+
+export default SiteMenu;

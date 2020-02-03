@@ -1,10 +1,5 @@
 import AbstractComponent from './abstract-component.js';
-
-export const SortType = {
-  DEFAULT: `sort-event`,
-  TIME: `sort-time`,
-  PRICE: `sort-price`
-};
+import {SortType} from '../const.js';
 
 const createEventsFilterMarkup = () => {
   return (
@@ -47,7 +42,7 @@ const createEventsFilterTemplate = () => {
   );
 };
 
-export default class Sort extends AbstractComponent {
+class Sort extends AbstractComponent {
   constructor() {
     super();
     this._currentSortType = SortType.DEFAULT;
@@ -75,3 +70,5 @@ export default class Sort extends AbstractComponent {
     });
   }
 }
+
+export default Sort;

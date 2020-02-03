@@ -1,4 +1,4 @@
-export default class Offers {
+class Offers {
   constructor() {
     this._offers = [];
   }
@@ -11,3 +11,5 @@ export default class Offers {
     this._offers = offers.map((offer) => offer);
   }
 }
+
+export default Offers;

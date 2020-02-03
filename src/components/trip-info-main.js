@@ -42,7 +42,7 @@ const createTripInfoMainTemplate = (eventsList) => {
   );
 };
 
-export default class TripInfoMain extends AbstractComponent {
+class TripInfoMain extends AbstractComponent {
   constructor(eventsList) {
     super();
     this._eventsList = eventsList;
@@ -52,3 +52,5 @@ export default class TripInfoMain extends AbstractComponent {
     return createTripInfoMainTemplate(this._eventsList);
   }
 }
+
+export default TripInfoMain;

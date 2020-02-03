@@ -1,10 +1,12 @@
 import Event from '../models/event.js';
 
-const getSyncedEvents = (items) => items
-  .filter(({success}) => success)
-  .map(({payload}) => payload.point);
+const getSyncedEvents = (events) => {
+  return events
+    .filter(({success}) => success)
+    .map(({payload}) => payload.point);
+};
 
-export default class Provider {
+class Provider {
   constructor(api, store) {
     this._api = api;
     this._store = store;
@@ -134,3 +136,5 @@ export default class Provider {
     return window.navigator.onLine;
   }
 }
+
+export default Provider;

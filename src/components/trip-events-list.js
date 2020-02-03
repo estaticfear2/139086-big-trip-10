@@ -1,8 +1,8 @@
 import AbstractComponent from './abstract-component.js';
 
-const createTripDayInfoMarkup = (date, i) => {
+const createTripDayInfoMarkup = (date, index) => {
   return (
-    `<span class="day__counter">${++i}</span>
+    `<span class="day__counter">${++index}</span>
       <time class="day__date" datetime="2019-03-18">
         ${new Date(date).toLocaleString(`en-US`, {month: `short`})}
         ${new Date(date).getDate()}
@@ -15,11 +15,11 @@ const createTripDayMarkup = (dayList = []) => {
     dayList[0] = null;
   }
 
-  return dayList.map((it, i) => {
+  return dayList.map((day, index) => {
     return (
       `<li class="trip-days__item  day">
           <div class="day__info">
-            ${dayList[0] === null ? `` : createTripDayInfoMarkup(it, i)}
+            ${dayList[0] === null ? `` : createTripDayInfoMarkup(day, index)}
           </div>
 
           <ul class="trip-events__list">
@@ -37,7 +37,7 @@ const createTripEventsListTemplate = (dayList) => {
   );
 };
 
-export default class TripEventsList extends AbstractComponent {
+class TripEventsList extends AbstractComponent {
   constructor(dayList) {
     super();
     this._dayList = dayList;
@@ -47,3 +47,5 @@ export default class TripEventsList extends AbstractComponent {
     return createTripEventsListTemplate(this._dayList);
   }
 }
+
+export default TripEventsList;

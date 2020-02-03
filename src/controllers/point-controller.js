@@ -1,19 +1,14 @@
+import moment from 'moment';
+
 import Trip from '../components/trip.js';
 import TripEdit from '../components/trip-edit.js';
 import {render, RenderPosition, replace, remove} from '../utils/render.js';
-import {EVENT_TYPE} from '../const.js';
-import moment from 'moment';
+import {EVENT_TYPE, EventMode} from '../const.js';
 import EventModel from '../models/event.js';
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
-export const EventMode = {
-  DEFAULT: `default`,
-  EDIT: `edit`,
-  ADDING: `adding`
-};
-
-export const getEmptyEvent = (id) => {
+const getEmptyEvent = (id) => {
   return ({
     id,
     type: EVENT_TYPE[0],
@@ -32,10 +27,10 @@ const parseFormData = (formData, event, destinations, offers) => {
   const type = formData.get(`event-type`);
   const city = formData.get(`event-destination`);
 
-  const [{description, pictures}] = destinations.filter((it) => it.name === city);
-  const eventOffers = offers.filter((it) => it.type === type)[0].offers;
-  const checkedOffers = eventOffers.filter((it, i) => {
-    return formData.get(`event-offer-${i}`) === `on`;
+  const [{description, pictures}] = destinations.filter((destination) => destination.name === city);
+  const eventOffers = offers.filter((offer) => offer.type === type)[0].offers;
+  const checkedOffers = eventOffers.filter((offer, index) => {
+    return formData.get(`event-offer-${index}`) === `on`;
   });
 
   const startDate = moment(formData.get(`event-start-time`), `DD/MM/YY HH:mm`).valueOf();
@@ -57,7 +52,7 @@ const parseFormData = (formData, event, destinations, offers) => {
   });
 };
 
-export default class EventController {
+class EventController {
   constructor(container, onDataChange, onViewChange) {
     this._container = container;
     this._onDataChange = onDataChange;
@@ -71,6 +66,7 @@ export default class EventController {
   }
 
   destroy() {
+    this.removeFlatpickr();
     remove(this._eventComponent);
     remove(this._eventEditComponent);
     document.removeEventListener(`keydown`, this._onEscKeyDown);
@@ -95,25 +91,23 @@ export default class EventController {
       this._onDataChange(this, event, newEvent);
     });
 
-    this._eventEditComponent.setEditFormSubmitHandler((evt) => {
-      evt.preventDefault();
-
+    this._eventEditComponent.setEditFormSubmitHandler(() => {
       const formData = this._eventEditComponent.getData();
-      const data = parseFormData(formData, event, destinations, offers);
+      const newEvent = parseFormData(formData, event, destinations, offers);
 
       this._eventEditComponent.setData({
         saveButtonText: `Saving...`,
         isBlocked: true
-      }, data);
+      }, newEvent);
 
-      this._onDataChange(this, event, data);
+      this._onDataChange(this, event, newEvent);
     });
 
     this._eventEditComponent.setDeleteButtonClickHandler(() => {
       this._eventEditComponent.setData({
         deleteButtonText: `Deletinf...`,
         isBlocked: true
-      }, event);
+      });
 
       this._onDataChange(this, event, null);
     });
@@ -163,7 +157,7 @@ export default class EventController {
       this._eventEditComponent.setData({
         saveButtonText: `Save`,
         deleteButtonText: `Delete`
-      }, this._eventEditComponent._event);
+      });
     }, SHAKE_ANIMATION_TIMEOUT);
   }
 
@@ -171,6 +165,7 @@ export default class EventController {
     const isEscape = (evt.key === `Escape` || evt.key === `Esc`);
 
     if (isEscape) {
+      this.removeFlatpickr();
       if (this._eventMode === EventMode.ADDING) {
         this._onDataChange(this, getEmptyEvent(this._eventComponent.id), null);
         this._eventEditComponent.reset();
@@ -196,3 +191,6 @@ export default class EventController {
     this._eventMode = EventMode.DEFAULT;
   }
 }
+
+export default EventController;
+export {getEmptyEvent};

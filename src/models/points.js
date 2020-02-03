@@ -2,7 +2,7 @@ import {FilterType} from '../const.js';
 import {getEventsByFilter} from '../utils/filter.js';
 import {getSortedEvents} from '../utils/sort.js';
 
-export default class Events {
+class Events {
   constructor() {
     this._events = [];
 
@@ -32,7 +32,7 @@ export default class Events {
   }
 
   removeEvent(id) {
-    const index = this._events.findIndex((it) => it.id === id);
+    const index = this._events.findIndex((event) => event.id === id);
 
     if (index === -1) {
       return false;
@@ -63,7 +63,7 @@ export default class Events {
   }
 
   updateEvent(id, newEvent) {
-    const index = this._events.findIndex((it) => it.id === id);
+    const index = this._events.findIndex((event) => event.id === id);
 
     if (index === -1) {
       return false;
@@ -76,3 +76,5 @@ export default class Events {
     return true;
   }
 }
+
+export default Events;

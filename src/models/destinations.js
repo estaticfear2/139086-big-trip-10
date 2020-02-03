@@ -1,4 +1,4 @@
-export default class Destinations {
+class Destinations {
   constructor() {
     this._destinations = [];
   }
@@ -7,13 +7,15 @@ export default class Destinations {
     return this._destinations;
   }
 
-  setDestinations(data) {
-    this._destinations = data.map((it) => {
+  setDestinations(destinations) {
+    this._destinations = destinations.map((destination) => {
       return {
-        description: it.description,
-        name: it.name,
-        pictures: it.pictures
+        description: destination.description,
+        name: destination.name,
+        pictures: destination.pictures
       };
     });
   }
 }
+
+export default Destinations;

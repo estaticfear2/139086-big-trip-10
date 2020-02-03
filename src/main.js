@@ -43,7 +43,6 @@ const offersModel = new OffersModel();
 const tripController = new TripController(tripEventsElement, eventsModel, destinationsModel, offersModel, apiWithProvider);
 
 const filterController = new FilterController(siteControlsElement, eventsModel);
-filterController.render();
 
 const statisticsComponent = new Statistics(eventsModel);
 render(tripEventsElement, statisticsComponent, RenderPosition.AFTEREND);
@@ -76,6 +75,7 @@ Promise.all([apiWithProvider.getEvents(), apiWithProvider.getDestinations(), api
     tripController.init();
     tripController.render();
     tripController.renderTripInfo(tripInfoElement);
+    filterController.render();
   });
 
 window.addEventListener(`online`, () => {

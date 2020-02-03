@@ -1,17 +1,17 @@
 import {EVENT_TYPE} from '../const.js';
 
-export default class Event {
-  constructor(data) {
-    this.id = data[`id`];
-    this.type = EVENT_TYPE.find((it) => it.name === data[`type`]);
-    this.city = data[`destination`][`name`];
-    this.photo = data[`destination`][`pictures`];
-    this.description = data[`destination`][`description`];
-    this.startDate = new Date(data[`date_from`]);
-    this.endDate = new Date(data[`date_to`]);
-    this.price = data[`base_price`];
-    this.offers = data[`offers`];
-    this.isFavorite = Boolean(data[`is_favorite`]);
+class Event {
+  constructor(event) {
+    this.id = event[`id`];
+    this.type = EVENT_TYPE.find((eventType) => eventType.name === event[`type`]);
+    this.city = event[`destination`][`name`];
+    this.photo = event[`destination`][`pictures`];
+    this.description = event[`destination`][`description`];
+    this.startDate = new Date(event[`date_from`]);
+    this.endDate = new Date(event[`date_to`]);
+    this.price = event[`base_price`];
+    this.offers = event[`offers`];
+    this.isFavorite = Boolean(event[`is_favorite`]);
   }
 
   toRAW() {
@@ -31,15 +31,17 @@ export default class Event {
     };
   }
 
-  static parseEvent(data) {
-    return new Event(data);
+  static parseEvent(event) {
+    return new Event(event);
   }
 
-  static parseEvents(data) {
-    return data.map(Event.parseEvent);
+  static parseEvents(events) {
+    return events.map(Event.parseEvent);
   }
 
-  static clone(data) {
-    return new Event(data.toRAW());
+  static clone(event) {
+    return new Event(event.toRAW());
   }
 }
+
+export default Event;

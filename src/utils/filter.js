@@ -4,15 +4,15 @@ const getEventsByDate = (events) => {
   return events.sort((a, b) => a.startDate - b.startDate);
 };
 
-export const getFutureEvents = (events, now) => {
-  return events.filter((event) => event.startDate >= now);
+const getFutureEvents = (events, date) => {
+  return events.filter((event) => event.startDate >= date);
 };
 
-export const getPastEvents = (events, now) => {
-  return events.filter((event) => event.endDate < now);
+const getPastEvents = (events, date) => {
+  return events.filter((event) => event.endDate < date);
 };
 
-export const getEventsByFilter = (events, filterType) => {
+const getEventsByFilter = (events, filterType) => {
   const now = new Date();
 
   switch (filterType) {
@@ -26,3 +26,5 @@ export const getEventsByFilter = (events, filterType) => {
 
   return events;
 };
+
+export {getEventsByFilter};

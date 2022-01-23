@@ -13,8 +13,8 @@ import {MenuItem} from './const.js';
 
 import {render, RenderPosition, remove} from './utils/render.js';
 
-const AUTHORIZATION = `Basic er883jdzbd=`;
-const END_POINT = `https://htmlacademy-es-10.appspot.com/big-trip`;
+const AUTHORIZATION = `Basic eo0w590ik29889a`;
+const END_POINT = `https://14.ecmascript.pages.academy/big-trip`;
 
 window.addEventListener(`load`, () => {
   navigator.serviceWorker.register(`/sw.js`);
